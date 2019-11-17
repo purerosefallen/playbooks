@@ -95,7 +95,6 @@
         src: ~/.vim/
         dest: ~/.vim
         delete: true
-        recursive: true
     - name: git user.email
       git_config:
         name: user.email
