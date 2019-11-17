@@ -58,7 +58,7 @@
       apt:
         update_cache: true
         state: latest
-        name: ctags,p7zip-rar
+        name: ctags
       when: "ansible_distribution == 'Ubuntu' or (ansible_distribution == 'Debian' and ansible_distribution_major_version == 9)"
     - name: Debian 10 packages
       become: true
