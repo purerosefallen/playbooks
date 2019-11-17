@@ -53,20 +53,20 @@
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute
       when: "ansible_distribution != 'CentOS'"
-    - name: Ubuntu packages
+    - name: Ubuntu & Debian 9 packages
       become: true
       apt:
         update_cache: true
         state: latest
-        name: ctags
-      when: "ansible_distribution == 'Ubuntu'"
-    - name: Debian packages
+        name: ctags,p7zip-rar
+      when: "ansible_distribution == 'Ubuntu' or (ansible_distribution == 'Debian' and ansible_distribution_major_version == 9)"
+    - name: Debian 10 packages
       become: true
       apt:
         update_cache: true
         state: latest
-        name: universal-ctags,p7zip-rar
-      when: "ansible_distribution == 'Debian'"
+        name: universal-ctags
+      when: "ansible_distribution == 'Debian' and ansible_distribution_major_version == 10"
     - name: yum update
       become: true
       yum:
@@ -95,6 +95,7 @@
         src: ~/.vim/
         dest: ~/.vim
         delete: true
+        recursive: true
     - name: git user.email
       git_config:
         name: user.email
