@@ -1,0 +1,23 @@
+---
+- hosts: worker
+  remote_user: nanahira
+  tasks:
+    - name: ssh
+      copy:
+        src: ~/.ssh/id_rsa
+        dest: ~/.ssh/
+        mode: 0600
+    - name: ssh
+      copy:
+        src: ~/.ssh/id_rsa.pub
+        dest: ~/.ssh/
+        mode: 0600
+    - name: apt
+      become: true
+      apt:
+        name: ansible
+    - name: ansible
+      synchronize:
+        src: ~/ansible/
+        dest: ~/ansible
+        delete: true

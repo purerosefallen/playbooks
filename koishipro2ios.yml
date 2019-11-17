@@ -1,0 +1,17 @@
+---
+- hosts: koishipro2ios
+  remote_user: root
+  tasks:
+    - name: fixerr
+      file:
+        path: '{{ deploy_path }}/koishipro2ios'
+        state: absent
+    - name: Update KoishiPro2 iOS
+      synchronize:
+        src: /home/nanahira/koishipro2/koishipro2ios/
+        dest: '{{ deploy_path }}'
+        delete: no
+        recursive: yes
+        verify_host: no
+        checksum: yes
+        archive: no

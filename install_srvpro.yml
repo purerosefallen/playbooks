@@ -1,0 +1,123 @@
+---
+- hosts: srvpro
+  remote_user: root
+  #vars:
+  #  home_path: /root
+  #  fork: mycard
+  tasks:
+    - name: apt
+      become: yes
+      become_user: root
+      become_method: sudo
+      apt:
+        update_cache: true
+        state: latest
+        name: curl,wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,nodejs,npm,redis-server,p7zip-full
+    - name: npm
+      become: yes
+      become_user: root
+      become_method: sudo
+      npm:
+        name: npm
+        state: latest
+        global: true
+    - name: npm
+      become: yes
+      become_user: root
+      become_method: sudo
+      npm:
+        name: pm2
+        state: latest
+        global: true
+    - name: npm
+      become: yes
+      become_user: root
+      become_method: sudo
+      npm:
+        name: 'n'
+        state: latest
+        global: true
+    - name: nodejs version
+      become: yes
+      become_user: root
+      become_method: sudo
+      shell: n 12
+    - name: ygopro
+      git:
+        repo: 'https://github.com/{{fork}}/ygopro'
+        dest: '{{home_path}}/ygopro'
+        version: server
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: premake5
+      unarchive:
+        src: https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz
+        dest: '{{home_path}}/ygopro/'
+        remote_src: yes
+    - name: premake5 gmake
+      shell: ./premake5 gmake
+      args:
+        chdir: '{{home_path}}/ygopro'
+    - name: build
+      make:
+        chdir: '{{home_path}}/ygopro/build'
+        target: config=release
+    - name: link ygopro
+      file:
+        path: '{{home_path}}/ygopro'
+        state: link
+        src: bin/release/ygopro
+        dest: ygopro
+    - name: strip ygopro
+      shell: strip ygopro
+      args:
+        chdir: '{{home_path}}/ygopro'
+    - name: windbot
+      git:
+        repo: 'https://github.com/{{fork}}/windbot'
+        dest: '{{home_path}}/windbot'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: build windbot
+      shell: xbuild /p:Configuration=Release TargetFrameworkVersion=v4.5
+      args:
+        chdir: '{{home_path}}/windbot'
+    - name: link windbot.exe
+      file:
+        path: '{{home_path}}/windbot'
+        state: link
+        src: bin/Release/WindBot.exe
+        dest: WindBot.exe
+    - name: link cards.cdb
+      file:
+        path: '{{home_path}}/windbot'
+        state: link
+        src: ../ygopro/cards.cdb
+        dest: cards.cdb
+    - name: srvpro
+      git:
+        repo: 'https://github.com/{{fork}}/srvpro'
+        dest: '{{home_path}}/ygopro-server'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: srvpro npm
+      npm:
+        ci: true
+        path: '{{home_path}}/ygopro-server'
+    - name: link ygopro repo
+      file:
+        path: '{{home_path}}/ygopro-server'
+        state: link
+        src: ../ygopro
+        dest: ygopro
+    - name: link windbot repo
+      file:
+        path: '{{home_path}}/ygopro-server'
+        state: link
+        src: ../windbot
+        dest: windbot

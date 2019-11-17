@@ -1,0 +1,58 @@
+---
+- hosts: srvpro
+  remote_user: root
+  vars:
+    backup_name: '1113'
+  tasks:
+    - name: srvpro
+      git:
+        repo: 'https://github.com/{{fork}}/srvpro'
+        dest: ~/ygopro-server
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: srvpro npm
+      npm:
+        path: ~/ygopro-server
+    - name: windbot
+      git:
+        repo: 'https://github.com/{{fork}}/windbot'
+        dest: ~/windbot
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: build windbot
+      shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
+      args:
+        chdir: ~/windbot
+    - name: remove deprecated ygopro-new
+      file:
+        path: ~/ygopro-new
+        state: absent
+    - name: ygopro new
+      shell: cp -rf ~/ygopro ~/ygopro-new
+    - name: ygopro
+      git:
+        repo: 'https://github.com/{{fork}}/ygopro'
+        dest: ~/ygopro-new
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: premake5 gmake
+      shell: ./premake5 gmake
+      args:
+        chdir: ~/ygopro-new
+    - name: build
+      make:
+        chdir: ~/ygopro-new/build
+        target: config=release
+    - name: strip ygopro
+      shell: strip ygopro
+      args:
+        chdir: ~/ygopro-new
+    - name: remove same backup
+      file:
+        path: '~/ygopro-bak{{backup_name}}'
+        state: absent
+    - name: move ygopro
+      shell: 'mv ~/ygopro ~/ygopro-bak{{backup_name}} && mv ~/ygopro-new ~/ygopro'

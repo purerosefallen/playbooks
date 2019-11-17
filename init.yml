@@ -1,0 +1,116 @@
+---
+- hosts: init
+  remote_user: nanahira
+  tasks:
+    - name: authorized_key
+      authorized_key:
+        user: "{{ ansible_user_id }}"
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+      # when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version != 8"
+    - name: sudoers
+      become: true
+      lineinfile:
+        path: /etc/sudoers
+        insertafter: 'EOF'
+        line: '{{ ansible_user_id }} ALL=(ALL:ALL) NOPASSWD: ALL'
+        validate: /usr/sbin/visudo -cf %s
+      when: "ansible_user_id != 'root'"
+    - name: timezone
+      become: true
+      timezone:
+        name: Asia/Shanghai
+    - name: TCP BBR
+      become: true
+      sysctl:
+        name: net.core.default_qdisc
+        value: fq
+        sysctl_set: yes
+      when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version == 8"
+    - name: TCP BBR
+      become: true
+      sysctl:
+        name: net.ipv4.tcp_congestion_control
+        value: bbr
+        sysctl_set: yes
+      when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version == 8"
+    - name: limit
+      become: true
+      pam_limits:
+        domain: '{{ ansible_user_id }}'
+        limit_type: '-'
+        limit_item: nofile
+        value: 1048576
+    - name: apt upgrade
+      become: true
+      apt:
+        update_cache: true
+        upgrade: dist
+      when: "ansible_distribution != 'CentOS'"
+    - name: apt
+      become: true
+      apt:
+        update_cache: true
+        state: latest
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute
+      when: "ansible_distribution != 'CentOS'"
+    - name: Ubuntu packages
+      become: true
+      apt:
+        update_cache: true
+        state: latest
+        name: ctags
+      when: "ansible_distribution == 'Ubuntu'"
+    - name: Debian packages
+      become: true
+      apt:
+        update_cache: true
+        state: latest
+        name: universal-ctags,p7zip-rar
+      when: "ansible_distribution == 'Debian'"
+    - name: yum update
+      become: true
+      yum:
+        name: '*'
+        update_cache: true
+        state: latest
+      when: "ansible_distribution == 'CentOS'"
+    - name: epel
+      become: true
+      yum:
+        state: latest
+        name: epel-release
+      when: "ansible_distribution == 'CentOS'"
+    - name: yum
+      become: true
+      yum:
+        state: latest
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,python-setuptools,python-devel,traceroute
+      when: "ansible_distribution == 'CentOS'"
+    - name: vimrc
+      copy:
+        src: ~/.vimrc
+        dest: ~/.vimrc
+    - name: vim
+      synchronize:
+        src: ~/.vim/
+        dest: ~/.vim
+        delete: true
+    - name: git user.email
+      git_config:
+        name: user.email
+        scope: global
+        value: 78877@qq.com
+    - name: git user.name
+      git_config:
+        name: user.name
+        scope: global
+        value: purerosefallen
+    - name: git push.default
+      git_config:
+        name: push.default
+        scope: global
+        value: simple
+    - name: git ssh
+      known_hosts:
+        name: github.com
+        key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
