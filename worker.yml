@@ -21,3 +21,9 @@
         src: ~/ansible/
         dest: ~/ansible
         delete: true
+    - name: premake5 sync
+      become: true
+      copy:
+        src: /usr/bin/premake5
+        dest: /usr/bin/premake5
+        mode: 0755

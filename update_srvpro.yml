@@ -2,7 +2,7 @@
 - hosts: srvpro
   remote_user: root
   vars:
-    backup_name: '1113'
+    backup_name: '1120'
   tasks:
     - name: srvpro
       git:
@@ -11,9 +11,15 @@
         force: true
         accept_hostkey: true
         track_submodules: true
-    - name: srvpro npm
-      npm:
-        path: ~/ygopro-server
+    #- name: permission
+    #  become: true
+    #  file:
+    #    path: ~/.npm
+    #    recurse: true
+    #    owner: "{{ ansible_user_id }}"
+    #- name: srvpro npm
+    #  npm:
+    #    path: ~/ygopro-server
     - name: windbot
       git:
         repo: 'https://github.com/{{fork}}/windbot'
@@ -29,6 +35,11 @@
       file:
         path: ~/ygopro-new
         state: absent
+    - name: premake5 sync
+      copy:
+        src: /usr/bin/premake5
+        dest: ~/ygopro/premake5
+        mode: 0755
     - name: ygopro new
       shell: cp -rf ~/ygopro ~/ygopro-new
     - name: ygopro
