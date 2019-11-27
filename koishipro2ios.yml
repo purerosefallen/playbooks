@@ -8,7 +8,7 @@
         state: absent
     - name: Update KoishiPro2 iOS
       synchronize:
-        src: /home/nanahira/koishipro2/koishipro2ios/
+        src: /home/nanahira/ygo/koishipro2/koishipro2ios/
         dest: '{{ deploy_path }}'
         delete: no
         recursive: yes
