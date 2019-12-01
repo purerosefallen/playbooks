@@ -1,5 +1,5 @@
 ---
-- hosts: init
+- hosts: tmp
   remote_user: nanahira
   tasks:
     - name: authorized_key
@@ -89,7 +89,7 @@
       become: true
       yum:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute # astyle
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute # astyle
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
     #- name: yum autoremove
     #  become: true
@@ -113,7 +113,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,python-setuptools,python-devel,traceroute # xclip
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,python-setuptools,python-devel,traceroute # xclip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
