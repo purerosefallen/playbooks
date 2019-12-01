@@ -1,5 +1,5 @@
 ---
-- hosts: tmp
+- hosts: init
   remote_user: nanahira
   tasks:
     - name: authorized_key
@@ -113,7 +113,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,python-setuptools,python-devel,traceroute # xclip
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute # xclip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
