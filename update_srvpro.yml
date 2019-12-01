@@ -2,68 +2,70 @@
 - hosts: srvpro
   remote_user: root
   vars:
+#    home_path: ~
+#    fork: mycard
     backup_name: '1120'
   tasks:
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
-        dest: ~/ygopro-server
+        dest: '{{home_path}}/ygopro-server'
         force: true
         accept_hostkey: true
         track_submodules: true
     #- name: permission
     #  become: true
     #  file:
-    #    path: ~/.npm
+    #    path: '{{home_path}}/.npm'
     #    recurse: true
     #    owner: "{{ ansible_user_id }}"
     #- name: srvpro npm
     #  npm:
-    #    path: ~/ygopro-server
+    #    path: '{{home_path}}/ygopro-server'
     - name: windbot
       git:
         repo: 'https://github.com/{{fork}}/windbot'
-        dest: ~/windbot
+        dest: '{{home_path}}/windbot'
         force: true
         accept_hostkey: true
         track_submodules: true
     - name: build windbot
       shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
       args:
-        chdir: ~/windbot
+        chdir: '{{home_path}}/windbot'
     - name: remove deprecated ygopro-new
       file:
-        path: ~/ygopro-new
+        path: '{{home_path}}/ygopro-new'
         state: absent
     - name: premake5 sync
       copy:
         src: /usr/bin/premake5
-        dest: ~/ygopro/premake5
+        dest: '{{home_path}}/ygopro/premake5'
         mode: 0755
     - name: ygopro new
-      shell: cp -rf ~/ygopro ~/ygopro-new
+      shell: 'cp -rf {{home_path}}/ygopro {{home_path}}/ygopro-new'
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
-        dest: ~/ygopro-new
+        dest: '{{home_path}}/ygopro-new'
         force: true
         accept_hostkey: true
         track_submodules: true
     - name: premake5 gmake
       shell: ./premake5 gmake
       args:
-        chdir: ~/ygopro-new
+        chdir: ‘{{home_path}}/ygopro-new’
     - name: build
       make:
-        chdir: ~/ygopro-new/build
+        chdir: ‘{{home_path}}/ygopro-new/build’
         target: config=release
     - name: strip ygopro
       shell: strip ygopro
       args:
-        chdir: ~/ygopro-new
+        chdir: ’{{home_path}}/ygopro-new‘
     - name: remove same backup
       file:
-        path: '~/ygopro-bak{{backup_name}}'
+        path: '{{home_path}}/ygopro-bak{{backup_name}}'
         state: absent
     - name: move ygopro
-      shell: 'mv ~/ygopro ~/ygopro-bak{{backup_name}} && mv ~/ygopro-new ~/ygopro'
+      shell: 'mv {{home_path}}/ygopro {{home_path}}/ygopro-bak{{backup_name}} && mv {{home_path}}/ygopro-new {{home_path}}/ygopro'

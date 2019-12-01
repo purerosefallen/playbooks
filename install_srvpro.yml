@@ -1,47 +1,87 @@
 ---
-- hosts: srvpro
+- hosts: tmp
   remote_user: root
   #vars:
-  #  home_path: /root
+  #  home_path: ~
   #  fork: mycard
   tasks:
+    #- name: curl
+    #  become: yes
+    #  apt:
+    #    update_cache: true
+    #    state: latest
+    #    name: curl,apt-transport-https
+    #  when: "ansible_distribution != 'CentOS'"
+    #- name: node source
+    #  become: yes
+    #  shell: 'curl -sL https://deb.nodesource.com/setup_12.x | bash -'
+    #  when: "ansible_distribution != 'CentOS' and "
     - name: apt
       become: yes
-      become_user: root
-      become_method: sudo
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,nodejs,npm,redis-server,p7zip-full
+        name: curl,wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,npm,redis-server,p7zip-full
+      when: "ansible_distribution != 'CentOS'"
+    - name: mono yum key
+      become: yes
+      rpm_key:
+        key: 'http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef'
+      when: "ansible_distribution == 'CentOS'" 
+    - name: mono yum source
+      become: yes
+      yum_repository:
+        name: mono
+        description: mono
+        baseurl: 'https://download.mono-project.com/repo/centos{{ansible_distribution_major_version}}-stable/'
+        ip_resolve: 4
+        gpgkey: "https://download.mono-project.com/repo/xamarin.gpg"
+      when: "ansible_distribution == 'CentOS'"
+    - name: epel 7
+      become: true
+      yum:
+        state: latest
+        name: epel-release
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+    - name: yum
+      become: yes
+      yum:
+        state: latest
+        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+    - name: epel 8
+      become: true
+      dnf:
+        state: latest
+        name: epel-release
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+    - name: dnf
+      become: true
+      dnf:
+        state: latest
+        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: npm
       become: yes
-      become_user: root
-      become_method: sudo
       npm:
         name: npm
         state: latest
         global: true
     - name: npm
       become: yes
-      become_user: root
-      become_method: sudo
-      npm:
-        name: pm2
-        state: latest
-        global: true
-    - name: npm
-      become: yes
-      become_user: root
-      become_method: sudo
       npm:
         name: 'n'
         state: latest
         global: true
     - name: nodejs version
       become: yes
-      become_user: root
-      become_method: sudo
       shell: n 12
+    - name: npm
+      become: yes
+      npm:
+        name: pm2
+        state: latest
+        global: true
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
@@ -65,10 +105,9 @@
         target: config=release
     - name: link ygopro
       file:
-        path: '{{home_path}}/ygopro'
         state: link
-        src: bin/release/ygopro
-        dest: ygopro
+        src: '{{home_path}}/ygopro/bin/release/ygopro'
+        dest: '{{home_path}}/ygopro/ygopro'
     - name: strip ygopro
       shell: strip ygopro
       args:
@@ -82,21 +121,20 @@
         accept_hostkey: true
         track_submodules: true
     - name: build windbot
-      shell: xbuild /p:Configuration=Release TargetFrameworkVersion=v4.5
+      shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
       args:
         chdir: '{{home_path}}/windbot'
     - name: link windbot.exe
       file:
-        path: '{{home_path}}/windbot'
         state: link
-        src: bin/Release/WindBot.exe
-        dest: WindBot.exe
+        src: '{{home_path}}/windbot/bin/Release/WindBot.exe'
+        dest: '{{home_path}}/windbot/WindBot.exe'
     - name: link cards.cdb
       file:
         path: '{{home_path}}/windbot'
         state: link
-        src: ../ygopro/cards.cdb
-        dest: cards.cdb
+        src: '{{home_path}}/ygopro/cards.cdb'
+        dest: '{{home_path}}/windbot/cards.cdb'
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
@@ -105,19 +143,23 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+    - name: fixup npm
+      become: true
+      file:
+        path: ~/.npm
+        owner: '{{ansible_user_id}}'
+        recurse: true
+      when: "ansible_user_id != 'root'"
     - name: srvpro npm
       npm:
-        ci: true
         path: '{{home_path}}/ygopro-server'
     - name: link ygopro repo
       file:
-        path: '{{home_path}}/ygopro-server'
         state: link
-        src: ../ygopro
-        dest: ygopro
+        src: '{{home_path}}/ygopro'
+        dest: '{{home_path}}/ygopro-server/ygopro'
     - name: link windbot repo
       file:
-        path: '{{home_path}}/ygopro-server'
         state: link
-        src: ../windbot
-        dest: windbot
+        src: '{{home_path}}/windbot'
+        dest: '{{home_path}}/ygopro-server/windbot'
