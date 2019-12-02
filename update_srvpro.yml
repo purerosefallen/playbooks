@@ -39,7 +39,7 @@
         state: absent
     - name: premake5
       unarchive:
-        src: https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz
+        src: https://minio.mycard.moe:9000/nanahira/premake-5.0.0-alpha13-linux.tar.gz
         dest: '{{home_path}}/ygopro/'
         remote_src: yes
     - name: ygopro new
