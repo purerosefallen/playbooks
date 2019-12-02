@@ -37,11 +37,11 @@
       file:
         path: '{{home_path}}/ygopro-new'
         state: absent
-    - name: premake5 sync
-      copy:
-        src: /usr/bin/premake5
-        dest: '{{home_path}}/ygopro/premake5'
-        mode: 0755
+    - name: premake5
+      unarchive:
+        src: https://github.com/premake/premake-core/releases/download/v5.0.0-alpha13/premake-5.0.0-alpha13-linux.tar.gz
+        dest: '{{home_path}}/ygopro/'
+        remote_src: yes
     - name: ygopro new
       shell: 'cp -rf {{home_path}}/ygopro {{home_path}}/ygopro-new'
     - name: ygopro
