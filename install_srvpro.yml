@@ -5,24 +5,36 @@
   #  home_path: ~
   #  fork: mycard
   tasks:
-    #- name: curl
-    #  become: yes
-    #  apt:
-    #    update_cache: true
-    #    state: latest
-    #    name: curl,apt-transport-https
-    #  when: "ansible_distribution != 'CentOS'"
-    #- name: node source
-    #  become: yes
-    #  shell: 'curl -sL https://deb.nodesource.com/setup_12.x | bash -'
-    #  when: "ansible_distribution != 'CentOS' and "
-    - name: apt
+    - name: curl
       become: yes
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,npm,redis-server,p7zip-full
+        name: curl,apt-transport-https
       when: "ansible_distribution != 'CentOS'"
+    - name: node source
+      become: yes
+      shell: 'curl -sL https://deb.nodesource.com/setup_12.x | bash -'
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+    - name: apt
+      become: yes
+      apt:
+        #update_cache: true
+        state: latest
+        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,redis-server,p7zip-full
+      when: "ansible_distribution != 'CentOS'"
+    - name: nodejs from nodesource
+      become: yes
+      apt:
+        state: latest
+        name: nodejs
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+    - name: nodejs from apt
+      become: yes
+      apt:
+        state: latest
+        name: npm
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
     - name: mono yum key
       become: yes
       rpm_key:
@@ -41,13 +53,19 @@
       become: true
       yum:
         state: latest
-        name: epel-release
+        update_cache: true
+        name: epel-release,curl
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+    - name: node source
+      become: true
+      shell: 'curl -sL https://rpm.nodesource.com/setup_12.x | bash -'
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
     - name: yum
       become: yes
       yum:
         state: latest
-        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins
+        update_cache: true
+        name: wget,git,nodejs,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
     - name: epel 8
       become: true
@@ -59,7 +77,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins
+        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: npm
       become: yes
@@ -163,3 +181,9 @@
         state: link
         src: '{{home_path}}/windbot'
         dest: '{{home_path}}/ygopro-server/windbot'
+    - name: stop firewalld
+      become: true
+      systemd:
+        name: firewalld
+        state: stopped
+      when: "ansible_distribution == 'CentOS'" 
