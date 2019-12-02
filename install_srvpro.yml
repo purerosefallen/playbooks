@@ -121,15 +121,15 @@
       make:
         chdir: '{{home_path}}/ygopro/build'
         target: config=release
+    - name: strip ygopro
+      shell: strip bin/release/ygopro
+      args:
+        chdir: '{{home_path}}/ygopro'
     - name: link ygopro
       file:
         state: link
         src: '{{home_path}}/ygopro/bin/release/ygopro'
         dest: '{{home_path}}/ygopro/ygopro'
-    - name: strip ygopro
-      shell: strip ygopro
-      args:
-        chdir: '{{home_path}}/ygopro'
     - name: windbot
       git:
         repo: 'https://github.com/{{fork}}/windbot'

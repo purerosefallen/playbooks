@@ -60,7 +60,7 @@
         chdir: ‘{{home_path}}/ygopro-new/build’
         target: config=release
     - name: strip ygopro
-      shell: strip ygopro
+      shell: strip bin/release/ygopro
       args:
         chdir: ’{{home_path}}/ygopro-new‘
     - name: remove same backup
