@@ -19,6 +19,21 @@
       become: true
       timezone:
         name: Asia/Shanghai
+    - name: disable password access
+      become: true
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PasswordAuthentication yes.*$'
+        line: 'PasswordAuthentication no'
+        backrefs: true
+      when: "ansible_user_id == 'root' or ansible_user_id == 'nanahira' or ansible_user_id == 'mycard' or ansible_user_id == 'zh99998'" # Only
+      notify: restart_sshd
+    - name: swappiness
+      become: true
+      sysctl:
+        name: vm.swappiness
+        value: 1
+        sysctl_set: yes
     - name: TCP BBR
       become: true
       sysctl:
@@ -51,7 +66,7 @@
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar
       when: "ansible_distribution != 'CentOS'"
     - name: Ubuntu packages
       become: true
@@ -89,7 +104,7 @@
       become: true
       yum:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute # astyle
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute,tar # astyle
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
     #- name: yum autoremove
     #  become: true
@@ -113,7 +128,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute # xclip
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute,tar # xclip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
@@ -148,3 +163,9 @@
       known_hosts:
         name: github.com
         key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
+  handlers:
+    - name: restart_sshd
+      become: true
+      systemd:
+        name: sshd
+        state: restarted
