@@ -1,5 +1,5 @@
 ---
-- hosts: tmp
+- hosts: srvpro_install
   remote_user: root
   #vars:
   #  home_path: ~
