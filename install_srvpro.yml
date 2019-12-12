@@ -149,7 +149,6 @@
         path: '{{home_path}}/windbot/WindBot.exe'
     - name: link cards.cdb
       file:
-        path: '{{home_path}}/windbot'
         state: link
         src: '{{home_path}}/ygopro/cards.cdb'
         path: '{{home_path}}/windbot/cards.cdb'
