@@ -186,3 +186,8 @@
         name: firewalld
         state: stopped
       when: "ansible_distribution == 'CentOS'" 
+    - name: redis
+      become: true
+      systemd:
+        name: redis
+        state: started
