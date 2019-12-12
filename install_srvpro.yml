@@ -82,12 +82,6 @@
     - name: npm
       become: yes
       npm:
-        name: npm
-        state: latest
-        global: true
-    - name: npm
-      become: yes
-      npm:
         name: 'n'
         state: latest
         global: true
@@ -95,6 +89,12 @@
       become: yes
       shell: n 12
     - name: npm
+      become: yes
+      npm:
+        name: npm
+        state: latest
+        global: true
+    - name: pm2
       become: yes
       npm:
         name: pm2
