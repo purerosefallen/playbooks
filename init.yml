@@ -61,6 +61,11 @@
         update_cache: true
         upgrade: dist
       when: "ansible_distribution != 'CentOS'"
+    - name: fixup iptables with qemu
+      become: true
+      iptables:
+        chain: FORWARD
+        flush: true
     - name: apt
       become: true
       apt:
