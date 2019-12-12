@@ -1,6 +1,6 @@
 ---
 - hosts: init
-  remote_user: nanahira
+  remote_user: root
   tasks:
     - name: authorized_key
       authorized_key:
