@@ -19,15 +19,12 @@
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
     - name: nodesource
       become: true
+      with_items:
+        - deb
+        - deb-src
       apt_repository:
         filename: nodesource
-        repo: 'deb https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
-    - name: nodesource
-      become: true
-      apt_repository:
-        filename: nodesource
-        repo: 'deb-src https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
+        repo: '{{item}} https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
     - name: apt
       become: true
@@ -103,14 +100,11 @@
       shell: n 12
     - name: npm
       become: true
+      with_items:
+        - npm
+        - pm2
       npm:
-        name: npm
-        state: latest
-        global: true
-    - name: pm2
-      become: true
-      npm:
-        name: pm2
+        name: '{{item}}'
         state: latest
         global: true
     - name: ygopro
