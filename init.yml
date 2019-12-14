@@ -23,7 +23,7 @@
       become: true
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: '^#?PasswordAuthentication yes.*$'
+        regexp: '^#?PasswordAuthentication true.*$'
         line: 'PasswordAuthentication no'
         backrefs: true
       when: "ansible_user_id == 'root' or ansible_user_id == 'nanahira' or ansible_user_id == 'mycard' or ansible_user_id == 'zh99998'" # Only self-managed servers
@@ -33,20 +33,20 @@
       sysctl:
         name: vm.swappiness
         value: 1
-        sysctl_set: yes
+        sysctl_set: true
     - name: TCP BBR
       become: true
       sysctl:
         name: net.core.default_qdisc
         value: fq
-        sysctl_set: yes
+        sysctl_set: true
       when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int > 7"
     - name: TCP BBR
       become: true
       sysctl:
         name: net.ipv4.tcp_congestion_control
         value: bbr
-        sysctl_set: yes
+        sysctl_set: true
       when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int > 7"
     - name: limit
       become: true

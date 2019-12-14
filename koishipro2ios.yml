@@ -11,7 +11,7 @@
         src: /home/nanahira/ygo/koishipro2/koishipro2ios/
         dest: '{{ deploy_path }}'
         delete: no
-        recursive: yes
+        recursive: true
         verify_host: no
-        checksum: yes
+        checksum: true
         archive: no
