@@ -130,6 +130,7 @@
         target: config=release
     - name: strip ygopro
       shell: strip bin/release/ygopro
+      ignore_errors: true
       args:
         chdir: '{{home_path}}/ygopro'
     - name: link ygopro

@@ -54,15 +54,15 @@
     - name: premake5 gmake
       shell: ./premake5 gmake
       args:
-        chdir: ‘{{home_path}}/ygopro-new’
+        chdir: '{{home_path}}/ygopro-new'
     - name: build
       make:
-        chdir: ‘{{home_path}}/ygopro-new/build’
+        chdir: '{{home_path}}/ygopro-new/build'
         target: config=release
     - name: strip ygopro
       shell: strip bin/release/ygopro
       args:
-        chdir: ’{{home_path}}/ygopro-new‘
+        chdir: '{{home_path}}/ygopro-new'
     - name: remove same backup
       file:
         path: '{{home_path}}/ygopro-bak{{backup_name}}'
