@@ -136,7 +136,7 @@
     - name: link ygopro
       file:
         state: link
-        src: '{{home_path}}/ygopro/bin/release/ygopro'
+        src: './bin/release/ygopro'
         path: '{{home_path}}/ygopro/ygopro'
     - name: windbot
       git:
@@ -153,7 +153,7 @@
     - name: link windbot.exe
       file:
         state: link
-        src: '{{home_path}}/windbot/bin/Release/WindBot.exe'
+        src: './bin/Release/WindBot.exe'
         path: '{{home_path}}/windbot/WindBot.exe'
     - name: link cards.cdb
       file:
@@ -173,6 +173,7 @@
       file:
         path: ~/.npm
         owner: '{{ansible_user_id}}'
+        group: '{{ansible_user_id}}'
         recurse: true
       when: "ansible_user_id != 'root'"
     - name: srvpro npm
@@ -181,12 +182,12 @@
     - name: link ygopro repo
       file:
         state: link
-        src: '{{home_path}}/ygopro'
+        src: '../ygopro'
         path: '{{home_path}}/ygopro-server/ygopro'
     - name: link windbot repo
       file:
         state: link
-        src: '{{home_path}}/windbot'
+        src: '../windbot'
         path: '{{home_path}}/ygopro-server/windbot'
     - name: stop firewalld
       become: true
