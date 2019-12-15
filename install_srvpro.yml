@@ -98,6 +98,10 @@
     - name: nodejs version
       become: true
       shell: n 12
+    - name: node setcap
+      become: true
+      with_items: ['/usr/bin/node', '/usr/local/bin/node']
+      shell: 'setcap cap_net_bind_service=+eip {{item}}'
     - name: npm
       become: true
       with_items:

@@ -34,6 +34,30 @@
         name: vm.swappiness
         value: 1
         sysctl_set: true
+    - name: net.ipv4.ip_forward
+      become: true
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: 1
+        sysctl_set: true
+    - name: fs.inotify.max_user_watches
+      become: true
+      sysctl:
+        name: fs.inotify.max_user_watches
+        value: 524288
+        sysctl_set: true
+    - name: net.ipv4.conf.all.rp_filter
+      become: true
+      sysctl:
+        name: net.ipv4.conf.all.rp_filter
+        value: 0
+        sysctl_set: true
+    - name: net.ipv4.conf.default.rp_filter
+      become: true
+      sysctl:
+        name: net.ipv4.conf.default.rp_filter
+        value: 0
+        sysctl_set: true
     - name: TCP BBR
       become: true
       sysctl:
@@ -61,11 +85,26 @@
         update_cache: true
         upgrade: dist
       when: "ansible_distribution != 'CentOS'"
+    - name: yum update
+      become: true
+      yum:
+        name: '*'
+        update_cache: true
+        state: latest
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
+    - name: dnf update
+      become: true
+      dnf:
+        name: '*'
+        #update_cache: true
+        state: latest
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: fixup iptables with qemu
       become: true
       iptables:
         chain: FORWARD
         flush: true
+      when: 'hypervisor is defined'
     - name: apt
       become: true
       apt:
@@ -92,13 +131,6 @@
       apt:
         autoremove: true
       when: "ansible_distribution != 'CentOS'"
-    - name: yum update
-      become: true
-      yum:
-        name: '*'
-        update_cache: true
-        state: latest
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
     - name: epel 7
       become: true
       yum:
@@ -116,13 +148,6 @@
     #  yum:
     #    autoremove: true
     #  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
-    - name: dnf update
-      become: true
-      dnf:
-        name: '*'
-        #update_cache: true
-        state: latest
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: epel 8
       become: true
       dnf:
