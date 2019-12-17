@@ -102,7 +102,6 @@
       become: true
       with_items: ['/usr/bin/node', '/usr/local/bin/node']
       shell: 'setcap cap_net_bind_service=+eip {{item}}'
-      
       when: "ansible_user_id != 'root'"
     - name: npm
       become: true
