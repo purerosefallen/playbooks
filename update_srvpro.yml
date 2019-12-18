@@ -65,7 +65,7 @@
         chdir: '{{home_path}}/ygopro-new'
     - name: remove same backup
       file:
-        path: '{{home_path}}/ygopro-bak{{backup_name}}'
+        path: '{{home_path}}/ygopro-backup-{{backup_name}}'
         state: absent
     - name: move ygopro
-      shell: 'mv {{home_path}}/ygopro {{home_path}}/ygopro-bak{{backup_name}} && mv {{home_path}}/ygopro-new {{home_path}}/ygopro'
+      shell: 'mv {{home_path}}/ygopro {{home_path}}/ygopro-backup-{{backup_name}} && mv {{home_path}}/ygopro-new {{home_path}}/ygopro'
