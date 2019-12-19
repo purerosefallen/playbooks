@@ -1,0 +1,33 @@
+---
+  - hosts: wg
+    remote_user: root
+    tasks:
+      - name: config
+        become: true
+        template:
+          src: wireguard.conf.j2
+          dest: '/etc/wireguard/{{interface}}.conf'
+          owner: root
+          group: root
+          mode: '0600'
+      - name: wg-quick up
+        become: true
+        ignore_errors: true
+        register: wg_up_status
+        shell: 'wg-quick up {{interface}}'
+      - name: enable systemctl
+        become: true
+        ignore_errors: true
+        systemd:
+          name: 'wg-quick@{{interface}}'
+          state: started
+      - name: config for setconf
+        notify: setconf
+        template:
+          src: wireguard-setconf.conf.j2
+          dest: '/tmp/{{interface}}.conf'
+        when: "'already exists' in command_result.stderr"
+    handlers:
+      - name: setconf
+        become: true
+        shell: 'wg setconf {{interface}} /tmp/{{interface}}.conf'
