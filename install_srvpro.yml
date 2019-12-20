@@ -202,6 +202,16 @@
         state: link
         src: '../windbot'
         path: '{{home_path}}/ygopro-server/windbot'
+    - name: directories
+      file:
+        state: directory
+        path: '{{ home_path }}/{{ item }}'
+      with_items:
+        - ygopro/replay
+        - ygopro-server/decks
+        - ygopro-server/replays
+        - ygopro-server/logs
+        - ygopro-server/config
     - name: stop firewalld
       become: true
       systemd:
