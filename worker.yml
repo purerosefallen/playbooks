@@ -15,11 +15,16 @@
     - name: apt
       become: true
       apt:
-        name: ansible
+        name: ansible,awscli
     - name: ansible
       synchronize:
         src: ~/ansible/
         dest: ~/ansible
+        delete: true
+    - name: aws
+      synchronize:
+        src: ~/.aws/
+        dest: ~/aws
         delete: true
     #- name: premake5 sync
     #  become: true
