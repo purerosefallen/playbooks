@@ -173,6 +173,14 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+    - name: challonge
+      git:
+        repo: 'https://github.com/moecube/challonge'
+        dest: '{{home_path}}/ygopro-server/challonge'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: fixup npm
       become: true
       file:
