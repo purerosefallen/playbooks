@@ -49,6 +49,7 @@
       unarchive:
         src: https://minio.mycard.moe:9000/nanahira/premake-5.0.0-alpha13-linux.tar.gz
         dest: '{{home_path}}/ygopro/'
+        creates: '{{home_path}}/ygopro/premake5'
         remote_src: true
     - name: ygopro new
       shell: 'cp -rf {{home_path}}/ygopro {{home_path}}/ygopro-new'

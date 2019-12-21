@@ -1,0 +1,125 @@
+---
+- hosts: pter
+  remote_user: root
+  tasks:
+    - name: apt
+      apt:
+        update_cache: true
+        state: latest
+        name: curl,wget,apt-transport-https,lsb-release,gnupg,build-essential,tar,unzip,python,rsync
+      when: "ansible_distribution != 'CentOS'"
+    - name: nodesource
+      with_items:
+        - deb
+        - deb-src
+      apt_repository:
+        filename: nodesource
+        repo: '{{item}} https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+    - name: nodejs from nodesource
+      apt:
+        state: latest
+        name: nodejs
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+    - name: nodejs from apt
+      apt:
+        state: latest
+        name: npm
+      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
+    - name: Docker key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+      when: "ansible_distribution == 'Debian'"
+    - name: Docker source
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+        filename: docker
+      when: "ansible_distribution == 'Debian'"
+    - name: Docker for Debian
+      apt:
+        state: latest
+        update_cache: true
+        name: docker-ce
+      when: "ansible_distribution == 'Debian'"
+    - name: Docker for Ubuntu
+      apt:
+        state: latest
+        update_cache: true
+        name: docker.io
+      when: "ansible_distribution == 'Ubuntu'"
+    - name: epel 7
+      yum:
+        state: latest
+        update_cache: true
+        name: epel-release,curl
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+    - name: yum
+      yum:
+        state: latest
+        update_cache: true
+        name: wget,npm,gcc,gcc-c++,make,tar,unzip,docker,python,rsync
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+    - name: epel 8
+      dnf:
+        state: latest
+        name: epel-release
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+    - name: dnf
+      dnf:
+        state: latest
+        name: curl,wget,npm,gcc,gcc-c++,make,tar,unzip,docker,python,rsync
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+    - name: npm
+      npm:
+        name: 'n'
+        state: latest
+        global: true
+    - name: nodejs version
+      shell: n 10
+    - name: npm
+      with_items:
+        - npm
+        - pm2
+      npm:
+        name: '{{item}}'
+        state: latest
+        global: true
+    - name: docker systemd
+      systemd:
+        state: started
+        name: docker
+    - name: directories
+      file:
+        path: '/srv/{{item}}'
+        state: directory
+      with_items:
+        - daemon
+        - daemon-data
+    - name: download daemon
+      unarchive:
+        src: https://github.com/pterodactyl/daemon/releases/download/v0.6.12/daemon.tar.gz
+        dest: /srv/daemon
+        creates: /srv/daemon/src
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+    - name: npm install
+      npm:
+        path: /srv/daemon
+        production: true
+    - name: core.json
+      template:
+        src: pter.json.j2
+        dest: /srv/daemon/config/core.json
+      notify: launch
+    - name: certs
+      synchronize:
+        src: '{{ cert_path }}/'
+        dest: /srv/certs
+        delete: true
+      notify: launch
+  handlers:
+    - name: launch
+      shell: 'pm2 start src/index.js --name daemon && pm2 save && pm2 startup'
+      args:
+        chdir: /srv/daemon

@@ -24,7 +24,7 @@
     - name: aws
       synchronize:
         src: ~/.aws/
-        dest: ~/aws
+        dest: ~/.aws
         delete: true
     #- name: premake5 sync
     #  become: true

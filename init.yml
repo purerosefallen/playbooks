@@ -165,15 +165,12 @@
       dnf:
         autoremove: true
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
-    - name: vimrc
-      copy:
-        src: ~/.vimrc
-        dest: ~/.vimrc
     - name: vim
-      synchronize:
-        src: ~/.vim/
-        dest: ~/.vim
-        delete: true
+      unarchive:
+        src: https://minio.mycard.moe:9000/nanahira/nanahira-vim.tar.gz
+        dest: '~'
+        creates: '~/.vim'
+        remote_src: true
     - name: git user.email
       git_config:
         name: user.email
