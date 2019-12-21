@@ -123,3 +123,4 @@
       shell: 'pm2 start src/index.js --name daemon && pm2 save && pm2 startup'
       args:
         chdir: /srv/daemon
+      ignore_errors: true
