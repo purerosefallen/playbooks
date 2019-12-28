@@ -5,7 +5,7 @@
     - name: authorized_key
       authorized_key:
         user: "{{ ansible_user_id }}"
-        key: "{{ lookup('file', './authorized_keys') }}"
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
       # when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int != 8"
     - name: sudoers
       become: true
