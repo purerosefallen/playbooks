@@ -5,7 +5,7 @@
     - name: authorized_key
       authorized_key:
         user: "{{ ansible_user_id }}"
-        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        key: "{{ lookup('file', '../authorized_keys') }}"
       # when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int != 8"
     - name: sudoers
       become: true
@@ -110,7 +110,7 @@
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar,unzip,iperf,nmap,dnsutils
       when: "ansible_distribution != 'CentOS'"
     - name: Ubuntu packages
       become: true
@@ -141,7 +141,7 @@
       become: true
       yum:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute,tar # astyle
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute,tar,unzip,iperf,nmap # astyle
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
     #- name: yum autoremove
     #  become: true
@@ -158,7 +158,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute,tar # xclip
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute,tar,unzip,iperf,nmap # xclip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
