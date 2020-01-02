@@ -2,37 +2,6 @@
 - hosts: utility
   remote_user: root
   tasks:
-    - name: pre packages
-      apt:
-        update_cache: true
-        name: curl,wget,apt-transport-https,lsb-release,gnupg
-        state: latest
-    - name: Docker key
-      apt_key:
-        url: https://mirrors.aliyun.com/docker-ce/linux/debian/gpg
-    - name: Docker source
-      apt_repository:
-        repo: deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
-        filename: docker
-    - name: apt
-      apt:
-        update_cache: true
-        name: docker-ce,python-backports-shutil-get-terminal-size,python-backports.ssl-match-hostname,python-pip,rsync
-        state: latest
-    - name: docker service
-      systemd:
-        name: docker
-        state: started
-    - name: docker-compose pip
-      pip:
-        name: pip
-        state: latest
-        extra_args: -i https://mirrors.aliyun.com/pypi/simple/
-    - name: docker-compose    
-      pip:
-        name: docker-compose
-        state: latest
-        extra_args: -i https://mirrors.aliyun.com/pypi/simple/
     - name: utility directory
       file:
         path: /root/utility

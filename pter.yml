@@ -7,7 +7,6 @@
         update_cache: true
         state: latest
         name: curl,wget,apt-transport-https,lsb-release,gnupg,build-essential,tar,unzip,python,rsync
-      when: "ansible_distribution != 'CentOS'"
     - name: nodesource
       with_items:
         - deb
@@ -18,11 +17,13 @@
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
     - name: nodejs from nodesource
       apt:
+        update_cache: true
         state: latest
         name: nodejs
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
     - name: nodejs from apt
       apt:
+        update_cache: true
         state: latest
         name: npm
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
@@ -32,7 +33,7 @@
       when: "ansible_distribution == 'Debian'"
     - name: Docker source
       apt_repository:
-        repo: deb [arch=amd64] https://mirrors.aliyun.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+        repo: deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
         filename: docker
       when: "ansible_distribution == 'Debian'"
     - name: Docker for Debian
@@ -47,28 +48,6 @@
         update_cache: true
         name: docker.io
       when: "ansible_distribution == 'Ubuntu'"
-    - name: epel 7
-      yum:
-        state: latest
-        update_cache: true
-        name: epel-release,curl
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
-    - name: yum
-      yum:
-        state: latest
-        update_cache: true
-        name: wget,npm,gcc,gcc-c++,make,tar,unzip,docker,python,rsync
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
-    - name: epel 8
-      dnf:
-        state: latest
-        name: epel-release
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
-    - name: dnf
-      dnf:
-        state: latest
-        name: curl,wget,npm,gcc,gcc-c++,make,tar,unzip,docker,python,rsync
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: npm
       npm:
         name: 'n'
