@@ -1,0 +1,35 @@
+---
+- name: mono from apt
+  become: true
+  apt:
+    update_cache: true
+    state: latest
+    name: mono-complete
+  when: "ansible_distribution != 'CentOS'"
+- name: mono yum key
+  become: true
+  rpm_key:
+    key: 'http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef'
+  when: "ansible_distribution == 'CentOS'" 
+- name: mono yum source
+  become: true
+  yum_repository:
+    name: mono
+    description: mono
+    baseurl: 'https://download.mono-project.com/repo/centos{{ansible_distribution_major_version}}-stable/'
+    ip_resolve: 4
+    gpgkey: "https://download.mono-project.com/repo/xamarin.gpg"
+  when: "ansible_distribution == 'CentOS'"
+- name: mono from yum
+  become: true
+  yum:
+    state: latest
+    update_cache: true
+    name: mono-complete
+  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+- name: mono from dnf
+  become: true
+  dnf:
+    state: latest
+    name: mono-complete
+  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"

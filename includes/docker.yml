@@ -1,0 +1,58 @@
+--- # Ubuntu and Debian only
+- name: basic packages for docker
+  become: true
+  apt:
+    update_cache: true
+    state: latest
+    name: curl,wget,apt-transport-https,lsb-release,gnupg,tar,unzip,rsync
+- name: Docker key
+  become: true
+  apt_key:
+    url: https://mirrors.aliyun.com/docker-ce/linux/debian/gpg
+  when: "ansible_distribution == 'Debian'"
+- name: Docker source clean
+  become: true
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+    filename: docker
+    state: absent
+  when: "ansible_distribution == 'Debian'"
+- name: Docker source
+  become: true
+  apt_repository:
+    repo: deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+    filename: docker
+  when: "ansible_distribution == 'Debian'"
+- name: Docker for Debian
+  become: true
+  apt:
+    state: latest
+    update_cache: true
+    name: docker-ce,python-backports-shutil-get-terminal-size,python-backports.ssl-match-hostname,python-pip
+  when: "ansible_distribution == 'Debian'"
+- name: Docker for Ubuntu
+  become: true
+  apt:
+    state: latest
+    update_cache: true
+    name: docker.io,python-backports-shutil-get-terminal-size,python-backports.ssl-match-hostname,python-pip
+  when: "ansible_distribution == 'Ubuntu'"
+- name: docker user group
+  become: true
+  user:
+    name: '{{ansible_user_id}}'
+    append: true
+    groups: docker
+  when: "ansible_user_id != 'root'"
+- name: docker-compose pip
+  become: true
+  pip:
+    name: pip
+    state: latest
+    extra_args: -i https://mirrors.aliyun.com/pypi/simple/
+- name: docker-compose
+  become: true
+  pip:
+    name: docker-compose
+    state: latest
+    extra_args: -i https://mirrors.aliyun.com/pypi/simple/

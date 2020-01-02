@@ -1,64 +1,22 @@
 ---
 - hosts: srvpro
   remote_user: root
-  #vars:
+  vars:
+    nodejs_version: 12
   #  home_path: ~
   #  fork: mycard
   tasks:
-    - name: curl
-      become: true
-      apt:
-        update_cache: true
-        state: latest
-        name: curl,apt-transport-https,lsb-release,gnupg
-      when: "ansible_distribution != 'CentOS'"
-    - name: node apt key
-      become: true
-      apt_key:
-        url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
-    - name: nodesource
-      become: true
-      with_items:
-        - deb
-        - deb-src
-      apt_repository:
-        filename: nodesource
-        repo: '{{item}} https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+    - name: nodejs
+      include: includes/nodejs.yml
+    - name: mono
+      include: includes/mono.yml
     - name: apt
       become: true
       apt:
         update_cache: true
         state: latest
-        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,mono-complete,redis-server,p7zip-full
+        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,redis-server,p7zip-full
       when: "ansible_distribution != 'CentOS'"
-    - name: nodejs from nodesource
-      become: true
-      apt:
-        state: latest
-        name: nodejs
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
-    - name: nodejs from apt
-      become: true
-      apt:
-        state: latest
-        name: npm
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
-    - name: mono yum key
-      become: true
-      rpm_key:
-        key: 'http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef'
-      when: "ansible_distribution == 'CentOS'" 
-    - name: mono yum source
-      become: true
-      yum_repository:
-        name: mono
-        description: mono
-        baseurl: 'https://download.mono-project.com/repo/centos{{ansible_distribution_major_version}}-stable/'
-        ip_resolve: 4
-        gpgkey: "https://download.mono-project.com/repo/xamarin.gpg"
-      when: "ansible_distribution == 'CentOS'"
     - name: epel 7
       become: true
       yum:
@@ -66,16 +24,12 @@
         update_cache: true
         name: epel-release,curl
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
-    #- name: node source
-    #  become: true
-    #  shell: 'curl -sL https://rpm.nodesource.com/setup_12.x | bash -'
-    #  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
     - name: yum
       become: true
       yum:
         state: latest
         update_cache: true
-        name: wget,git,npm,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins,tar,unzip
+        name: wget,git,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
     - name: epel 8
       become: true
@@ -87,31 +41,8 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,nodejs,npm,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,mono-complete,redis,p7zip,p7zip-plugins,tar,unzip
+        name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
-    - name: npm
-      become: true
-      npm:
-        name: 'n'
-        state: latest
-        global: true
-    - name: nodejs version
-      become: true
-      shell: n 12
-    - name: node setcap
-      become: true
-      with_items: ['/usr/bin/node', '/usr/local/bin/node']
-      shell: 'setcap cap_net_bind_service=+eip {{item}}'
-      when: "ansible_user_id != 'root'"
-    - name: npm
-      become: true
-      with_items:
-        - npm
-        - pm2
-      npm:
-        name: '{{item}}'
-        state: latest
-        global: true
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'

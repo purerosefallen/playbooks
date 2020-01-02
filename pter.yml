@@ -1,72 +1,18 @@
 ---
 - hosts: pter
   remote_user: root
+  vars:
+    nodejs_version: 10
   tasks:
+    - name: nodejs
+      include: includes/nodejs.yml
+    - name: docker
+      include: includes/docker.yml
     - name: apt
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,apt-transport-https,lsb-release,gnupg,build-essential,tar,unzip,python,rsync
-    - name: nodesource
-      with_items:
-        - deb
-        - deb-src
-      apt_repository:
-        filename: nodesource
-        repo: '{{item}} https://deb.nodesource.com/node_12.x {{ansible_distribution_release}} main'
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
-    - name: nodejs from nodesource
-      apt:
-        update_cache: true
-        state: latest
-        name: nodejs
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
-    - name: nodejs from apt
-      apt:
-        update_cache: true
-        state: latest
-        name: npm
-      when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
-    - name: Docker key
-      apt_key:
-        url: https://mirrors.aliyun.com/docker-ce/linux/debian/gpg
-      when: "ansible_distribution == 'Debian'"
-    - name: Docker source
-      apt_repository:
-        repo: deb [arch=amd64] https://mirrors.aliyun.com/docker-ce/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
-        filename: docker
-      when: "ansible_distribution == 'Debian'"
-    - name: Docker for Debian
-      apt:
-        state: latest
-        update_cache: true
-        name: docker-ce
-      when: "ansible_distribution == 'Debian'"
-    - name: Docker for Ubuntu
-      apt:
-        state: latest
-        update_cache: true
-        name: docker.io
-      when: "ansible_distribution == 'Ubuntu'"
-    - name: npm
-      npm:
-        name: 'n'
-        state: latest
-        global: true
-    - name: nodejs version
-      shell: n 10
-    - name: npm
-      with_items:
-        - npm
-        - pm2
-      npm:
-        name: '{{item}}'
-        state: latest
-        global: true
-    - name: docker systemd
-      systemd:
-        state: started
-        name: docker
+        name: curl,wget,build-essential,tar,unzip,python,rsync
     - name: directories
       file:
         path: '/srv/{{item}}'
