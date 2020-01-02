@@ -47,13 +47,6 @@
         append: true
         groups: docker
       when: "ansible_user_id != 'root'"
-    - name: fake pip
-      become: true
-      file:
-        src: /usr/bin/pip3
-        dest: /usr/bin/pip
-        state: link
-      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: docker-compose pip
       become: true
       pip:
