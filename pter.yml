@@ -28,11 +28,11 @@
       when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
     - name: Docker key
       apt_key:
-        url: https://download.docker.com/linux/debian/gpg
+        url: https://mirrors.aliyun.com/docker-ce/linux/debian/gpg
       when: "ansible_distribution == 'Debian'"
     - name: Docker source
       apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
+        repo: deb [arch=amd64] https://mirrors.aliyun.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} stable
         filename: docker
       when: "ansible_distribution == 'Debian'"
     - name: Docker for Debian
