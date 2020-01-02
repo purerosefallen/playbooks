@@ -44,6 +44,11 @@
     append: true
     groups: docker
   when: "ansible_user_id != 'root'"
+- name: systemd
+  become: true
+  systemd:
+    name: docker
+    state: started
 - name: docker-compose pip
   become: true
   pip:
