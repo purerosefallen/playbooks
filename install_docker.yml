@@ -53,7 +53,6 @@
         name: pip
         state: latest
         extra_args: -i https://mirrors.aliyun.com/pypi/simple/
-      when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int != 8"
     - name: docker-compose
       become: true
       pip:
