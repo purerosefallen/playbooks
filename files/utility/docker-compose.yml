@@ -22,3 +22,12 @@ services:
             - '80:3142'
         volumes:
             - ./apt-cacher-ng/cache:/var/cache/apt-cacher-ng
+
+    kms:
+        restart: always
+        image: teddysun/kms
+        ports:
+            - 1688:1688
+        volumes:
+            - /etc/timezone:/etc/timezone:ro
+            - /etc/localtime:/etc/localtime:ro
