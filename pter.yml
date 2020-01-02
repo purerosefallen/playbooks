@@ -109,7 +109,7 @@
         production: true
     - name: core.json
       template:
-        src: pter.json.j2
+        src: files/pter/pter.json.j2
         dest: /srv/daemon/config/core.json
       notify: launch
     - name: certs

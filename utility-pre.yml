@@ -1,0 +1,16 @@
+---
+- hosts: utility
+  remote_user: root
+  tasks:
+  - name: hostname
+    hostname:
+      name: utility
+  - name: hosts for sudo
+    lineinfile:
+      dest: /etc/hosts
+      regexp: "^127.0.1.1"
+      line: "127.0.1.1 utility"
+  - name: apt source
+    copy:
+      src: files/utility/sources.list
+      dest: /etc/apt/sources.list
