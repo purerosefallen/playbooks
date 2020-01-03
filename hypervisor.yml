@@ -71,3 +71,4 @@
       with_items:
         - iso
         - img
+        - xml
