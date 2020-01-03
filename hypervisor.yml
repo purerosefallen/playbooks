@@ -1,0 +1,61 @@
+---
+- hosts: hypervisor
+  remote_user: root
+  tasks:
+    - name: apt
+      become: true
+      when: "ansible_distribution != 'CentOS'"
+      apt:
+        state: latest
+        update_cache: true
+        name: sudo,python,qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,python-libvirt,python-lxml
+    - name: yum
+      become: true
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+      yum:
+        state: latest
+        update_cache: true
+        name: sudo,python,kvm,qemu-kvm,qemu-kvm-tools,qemu-img,libvirt,libvirt-python,libguestfs-tools,bridge-utils,virt-install,python-lxml
+    - name: dnf
+      become: true
+      when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+      dnf:
+        state: latest
+        name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml
+    - name: libvirt service
+      become: true
+      systemd:
+        name: libvirtd
+        state: started
+    - name: stop firewalld
+      become: true
+      systemd:
+        name: firewalld
+        state: stopped
+      when: "ansible_distribution == 'CentOS'"
+    - name: flush forward table
+      become: true
+      iptables:
+        chain: FORWARD
+        flush: true
+    - name: iptables save
+      shell: 'sudo iptables-save > ~/ipt'
+    - name: iptables forward script
+      copy:
+        src: files/hypervisor/iptables-forward.sh
+        dest: '~/iptables-forward.sh'
+        mode: 0755
+    - name: permission for home path
+      become: true
+      file:
+        path: '{{home_path}}'
+        state: directory
+        owner: '{{ansible_user_id}}'
+        group: '{{ansible_user_id}}'
+    - name: pool directories
+      file:
+        path: '{{home_path}}/{{item}}'
+        state: directory
+      with_items:
+        - iso
+        - img
