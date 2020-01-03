@@ -5,6 +5,7 @@
     update_cache: true
     state: latest
     name: curl,wget,apt-transport-https,lsb-release,gnupg,tar,unzip,rsync
+  when: "ansible_distribution != 'CentOS'"
 - name: Docker key
   become: true
   apt_key:
@@ -37,6 +38,23 @@
     update_cache: true
     name: docker.io,python-backports-shutil-get-terminal-size,python-backports.ssl-match-hostname,python-pip
   when: "ansible_distribution == 'Ubuntu'"
+- name: epel 7
+  yum:
+    state: latest
+    update_cache: true
+    name: epel-release
+  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+- name: docker from yum
+  yum:
+    state: latest
+    update_cache: true
+    name: rsync,tar,unzip,docker,python-pip
+  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+- name: systemd
+  become: true
+  systemd:
+    name: docker
+    state: started
 - name: docker user group
   become: true
   user:
@@ -44,11 +62,6 @@
     append: true
     groups: docker
   when: "ansible_user_id != 'root'"
-- name: systemd
-  become: true
-  systemd:
-    name: docker
-    state: started
 - name: docker-compose pip
   become: true
   pip:
