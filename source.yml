@@ -1,0 +1,13 @@
+---
+- hosts: source
+  remote_user: root
+  tasks:
+    - name: source
+      become: true
+      copy:
+        src: 'files/source/{{ansible_distribution|lower}}/sources.list'
+        dest: /etc/apt/sources.list
+    - name: apt check
+      become: true
+      apt:
+        update_cache: true
