@@ -8,7 +8,7 @@
       apt:
         state: latest
         update_cache: true
-        name: sudo,python,qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,python-libvirt,python-lxml
+        name: sudo,python,qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,python-libvirt,python-lxml,ksmtuned
     - name: epel 7
       become: true
       yum:
@@ -39,6 +39,12 @@
       systemd:
         name: libvirtd
         state: started
+    - name: ksmtuned
+      become: true
+      systemd:
+        name: ksmtuned
+        state: started
+      when: "ansible_distribution != 'CentOS'"
     - name: stop firewalld
       become: true
       systemd:
