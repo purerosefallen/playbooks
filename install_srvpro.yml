@@ -155,3 +155,4 @@
       systemd:
         name: redis
         state: started
+        enabled: true

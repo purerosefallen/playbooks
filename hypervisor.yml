@@ -39,11 +39,13 @@
       systemd:
         name: libvirtd
         state: started
+        enabled: true
     - name: ksmtuned
       become: true
       systemd:
         name: ksmtuned
         state: started
+        enabled: true
       when: "ansible_distribution != 'CentOS'"
     - name: stop firewalld
       become: true

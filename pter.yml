@@ -3,6 +3,7 @@
   remote_user: root
   vars:
     nodejs_version: 10
+    pter_release: v0.6.12
   tasks:
     - name: nodejs
       include: includes/nodejs.yml
@@ -29,12 +30,13 @@
         - daemon-data
     - name: download daemon
       unarchive:
-        src: https://github.com/pterodactyl/daemon/releases/download/v0.6.12/daemon.tar.gz
+        src: 'https://github.com/pterodactyl/daemon/releases/download/{{pter_release}}/daemon.tar.gz'
         dest: /srv/daemon
         creates: /srv/daemon/src
         remote_src: true
         extra_opts:
           - --strip-components=1
+      notify: launch
     - name: npm install
       npm:
         path: /srv/daemon
