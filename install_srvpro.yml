@@ -64,7 +64,7 @@
     - name: build
       make:
         chdir: '{{home_path}}/ygopro/build'
-        target: 'config=release -j{{ lookup('pipe', 'nproc') }}'
+        target: "config=release -j{{ lookup('pipe', 'nproc') }}"
     - name: strip ygopro
       shell: strip bin/release/ygopro
       ignore_errors: true
