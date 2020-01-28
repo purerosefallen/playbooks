@@ -1,7 +1,7 @@
 {
     "web": {
         "host": "0.0.0.0",
-        "listen": 8443,
+        "listen": {{https_port}},
         "ssl": {
             "enabled": true,
             "certificate": "/srv/certs/fullchain.pem",
@@ -35,7 +35,7 @@
     "sftp": {
         "path": "/srv/daemon-data",
         "ip": "0.0.0.0",
-        "port": 2022,
+        "port": {{sftp_port}},
         "keypair": {
             "bits": 2048,
             "e": 65537

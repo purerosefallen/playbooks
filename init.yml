@@ -26,7 +26,7 @@
         regexp: '^#?PasswordAuthentication true.*$'
         line: 'PasswordAuthentication no'
         backrefs: true
-      when: "ansible_user_id == 'root' or ansible_user_id == 'nanahira' or ansible_user_id == 'mycard' or ansible_user_id == 'zh99998'" # Only self-managed servers
+      when: "(ansible_user_id == 'root' or ansible_user_id == 'nanahira' or ansible_user_id == 'mycard' or ansible_user_id == 'zh99998') and not allow_password is defined" # Only self-managed servers
       notify: restart_sshd
     - name: swappiness
       become: true

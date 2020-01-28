@@ -1,0 +1,69 @@
+---
+  - name: WireGuard 源 (Debian)
+    become: true
+    apt_repository:
+      repo: deb http://mirrors.163.com/debian/ unstable main
+      filename: unstable
+    when: ansible_distribution == 'Debian'
+  - name: WireGuard 源 (Debian)
+    become: true
+    apt_repository:
+      repo: deb http://deb.debian.org/debian/ unstable main
+      filename: unstable
+      state: absent
+    when: ansible_distribution == 'Debian'
+  - name: WireGuard 源 (Debian)
+    become: true
+    copy:
+      content: |
+        Package: *
+        Pin: release a=unstable
+        Pin-Priority: 90
+      dest: /etc/apt/preferences.d/limit-unstable
+    when: ansible_distribution == 'Debian'
+  - name: WireGuard 源 (Ubuntu)
+    become: true
+    apt_repository:
+      repo: ppa:wireguard/wireguard
+    when: ansible_distribution == 'Ubuntu'
+  - name: 安装软件包 (apt)
+    become: true
+    apt:
+      name: wireguard,resolvconf
+      state: latest
+      update_cache: yes
+    when: ansible_distribution != 'CentOS'
+  - name: WireGuard 源 (CentOS)
+    become: true
+    yum_repository:
+      name: wireguard
+      description: wireguard
+      baseurl: 'https://copr-be.cloud.fedoraproject.org/results/jdoss/wireguard/epel-{{ansible_distribution_major_version}}-$basearch/'
+      ip_resolve: 4
+      gpgkey: "https://copr-be.cloud.fedoraproject.org/results/jdoss/wireguard/pubkey.gpg"
+    when: "ansible_distribution == 'CentOS'"
+  - name: epel 7
+    become: true
+    yum:
+      state: latest
+      name: epel-release
+    when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+  - name: 安装软件包 (yum)
+    become: true
+    yum:
+      state: latest
+      update_cache: true
+      name: wireguard-tools,wireguard-dkms
+    when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+  - name: epel 8
+    become: true
+    dnf:
+      state: latest
+      name: epel-release
+    when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+  - name: 安装软件包 (dnf)
+    become: true
+    dnf:
+      state: latest
+      name: wireguard-tools,wireguard-dkms
+    when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
