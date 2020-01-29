@@ -63,10 +63,11 @@
   npm:
     name: 'n'
     state: latest
+    registry: https://registry.npm.taobao.org
     global: true
 - name: nodejs version
   become: true
-  shell: 'n {{nodejs_version}}'
+  shell: 'env NODE_MIRROR=https://npm.taobao.org/mirrors/node/ n {{nodejs_version}}'
 - name: node setcap
   become: true
   with_items: ['/usr/bin/node', '/usr/local/bin/node']
@@ -80,6 +81,7 @@
   npm:
     name: '{{item}}'
     state: latest
+    registry: https://registry.npm.taobao.org
     global: true
 - name: fixup npm directory
   become: true

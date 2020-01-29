@@ -40,6 +40,7 @@
     - name: npm install
       npm:
         path: /srv/daemon
+        registry: https://registry.npm.taobao.org
         production: true
     - name: core.json
       template:

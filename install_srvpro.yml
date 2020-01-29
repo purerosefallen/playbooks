@@ -124,6 +124,7 @@
     - name: srvpro npm
       npm:
         path: '{{home_path}}/ygopro-server'
+        registry: https://registry.npm.taobao.org
     - name: link ygopro repo
       file:
         state: link

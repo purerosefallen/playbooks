@@ -1,12 +1,13 @@
 ---
-- hosts: init
+- hosts: template
   remote_user: root
   tasks:
-    - name: authorized_key
-      authorized_key:
-        user: "{{ ansible_user_id }}"
-        key: "{{ lookup('file', '../authorized_keys') }}"
-      # when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int != 8"
+    - name: source
+      become: true
+      copy:
+        src: 'files/source/{{ansible_distribution|lower}}/sources.list'
+        dest: /etc/apt/sources.list
+      when: ansible_distribution != 'CentOS'
     - name: sudoers
       become: true
       lineinfile:
@@ -19,15 +20,13 @@
       become: true
       timezone:
         name: Asia/Shanghai
-    - name: disable password access
+    - name: permit root login
       become: true
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: '^#?PasswordAuthentication (true|yes).*$'
-        line: 'PasswordAuthentication no'
+        regexp: '^#?PermitRootLogin (false|no).*$'
+        line: 'PasswordAuthentication yes'
         backrefs: true
-      when: "(ansible_user_id == 'root' or ansible_user_id == 'nanahira' or ansible_user_id == 'mycard' or ansible_user_id == 'zh99998') and not allow_password is defined" # Only self-managed servers
-      notify: restart_sshd
     - name: sshd config
       become: true
       lineinfile:
@@ -35,7 +34,6 @@
         regexp: '^#?GSSAPIAuthentication (true|yes).*$'
         line: 'GSSAPIAuthentication no'
         backrefs: true
-      notify: restart_sshd
     - name: sshd config
       become: true
       lineinfile:
@@ -43,13 +41,6 @@
         regexp: '^#?UseDNS (true|yes).*$'
         line: 'UseDNS no'
         backrefs: true
-      notify: restart_sshd
-    - name: swappiness
-      become: true
-      sysctl:
-        name: vm.swappiness
-        value: 1
-        sysctl_set: true
     - name: net.ipv4.ip_forward
       become: true
       sysctl:
@@ -126,22 +117,8 @@
       apt:
         update_cache: true
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar,unzip,iperf,nmap,dnsutils
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar,unzip,iperf,nmap,dnsutils,open-vm-tools
       when: "ansible_distribution != 'CentOS'"
-    - name: Ubuntu packages
-      become: true
-      apt:
-        update_cache: true
-        state: latest
-        name: ctags
-      when: "ansible_distribution == 'Ubuntu'"
-    - name: Debian packages
-      become: true
-      apt:
-        update_cache: true
-        state: latest
-        name: universal-ctags
-      when: "ansible_distribution == 'Debian'"
     - name: apt autoremove
       become: true
       apt:
@@ -157,7 +134,7 @@
       become: true
       yum:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute,tar,unzip,iperf,nmap,libselinux-python # astyle
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,iperf,nmap,libselinux-python,open-vm-tools
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 7"
     - name: epel 8
       become: true
@@ -169,7 +146,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute,tar,unzip,nmap,python3-libselinux # xclip
+        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,nmap,python3-libselinux,open-vm-tools
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
@@ -182,40 +159,28 @@
         state: disabled
       when: "ansible_distribution == 'CentOS'"
     - name: disable selinux
+      become: true
       lineinfile:
         path: /etc/selinux/config
         regexp: '^SELINUX='
         line: 'SELINUX=disabled'
         backrefs: true
       when: "ansible_distribution == 'CentOS'"
-    - name: vim
-      unarchive:
-        src: https://minio.mycard.moe:9000/nanahira/nanahira-vim.tar.gz
-        dest: '~'
-        creates: '~/.vim'
-        remote_src: true
-    - name: git user.email
-      git_config:
-        name: user.email
-        scope: global
-        value: 78877@qq.com
-    - name: git user.name
-      git_config:
-        name: user.name
-        scope: global
-        value: purerosefallen
-    - name: git push.default
-      git_config:
-        name: push.default
-        scope: global
-        value: simple
-    - name: git ssh
-      known_hosts:
-        name: github.com
-        key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
-  handlers:
-    - name: restart_sshd
+    - name: remove hwaddr in ifcfg
       become: true
-      systemd:
-        name: sshd
-        state: restarted
+      shell: 'sed -i "/HWADDR/d" /etc/sysconfig/network-scripts/ifcfg-*'
+      when: "ansible_distribution == 'CentOS'"
+    - name: set hostname to localhost
+      become: true
+      lineinfile:
+        path: /etc/sysconfig/network
+        line: 'HOSTNAME=localhost.localdomain'
+        insertafter: 'EOF'
+      when: "ansible_distribution == 'CentOS'"
+    - name: clean logs and hostkeys
+      become: true
+      shell: 'rm -rf /etc/ssh/ssh_host_* /var/log/*'
+    - name: clean bash history
+      file:
+        name: '~/.bash_history'
+        state: absent
