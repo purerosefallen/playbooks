@@ -6,6 +6,14 @@
 #    fork: mycard
     backup_name: '{{lookup("pipe","date +%m.%d")}}'
   tasks:
+    - name: pre data
+      git:
+        repo: 'https://git.dev.tencent.com/mercury233/ygopro-pre-data.git'
+        dest: '{{home_path}}/ygopro-pre-data'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
@@ -28,10 +36,12 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+      when: 'server_type != "tournament"'
     - name: build windbot
       shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
       args:
         chdir: '{{home_path}}/windbot'
+      when: 'server_type != "tournament"'
     - name: remove deprecated ygopro-new
       file:
         path: '{{home_path}}/ygopro-new'

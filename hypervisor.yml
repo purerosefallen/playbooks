@@ -2,6 +2,10 @@
 - hosts: hypervisor
   remote_user: root
   tasks:
+    - name: authorized_key
+      authorized_key:
+        user: "{{ ansible_user_id }}"
+        key: "{{ webvirt_ssh_key }}"
     - name: apt
       become: true
       when: "ansible_distribution != 'CentOS'"

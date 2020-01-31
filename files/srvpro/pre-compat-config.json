@@ -1,0 +1,4 @@
+{
+  "official_database": "./ygopro/cards.cdb",
+  "pre_release_database": "./../ygopro-pre-data/expansions/pre-release.cdb"
+}

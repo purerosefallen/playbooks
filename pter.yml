@@ -2,13 +2,13 @@
 - hosts: pter
   remote_user: root
   vars:
-    nodejs_version: 10
     pter_release: v0.6.12
-  tasks:
+  roles:
     - name: nodejs
-      include: includes/nodejs.yml
+      vars:
+        nodejs_version: 10
     - name: docker
-      include: includes/docker.yml
+  tasks:
     - name: apt
       apt:
         update_cache: true

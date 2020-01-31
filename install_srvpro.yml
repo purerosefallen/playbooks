@@ -2,14 +2,16 @@
 - hosts: srvpro
   remote_user: root
   vars:
-    nodejs_version: 12
   #  home_path: ~
   #  fork: mycard
-  tasks:
+  #  server_type: public
+  roles:
     - name: nodejs
-      include: includes/nodejs.yml
+      vars:
+        nodejs_version: 12
     - name: mono
-      include: includes/mono.yml
+      when: 'server_type != "tournament"'
+  tasks:
     - name: apt
       become: true
       apt:
@@ -43,6 +45,14 @@
         state: latest
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+    - name: pre data
+      git:
+        repo: 'https://git.dev.tencent.com/mercury233/ygopro-pre-data.git'
+        dest: '{{home_path}}/ygopro-pre-data'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
@@ -83,20 +93,24 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+      when: 'server_type != "tournament"'
     - name: build windbot
       shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
       args:
         chdir: '{{home_path}}/windbot'
+      when: 'server_type != "tournament"'
     - name: link windbot.exe
       file:
         state: link
         src: './bin/Release/WindBot.exe'
         path: '{{home_path}}/windbot/WindBot.exe'
+      when: 'server_type != "tournament"'
     - name: link cards.cdb
       file:
         state: link
         src: '{{home_path}}/ygopro/cards.cdb'
         path: '{{home_path}}/windbot/cards.cdb'
+      when: 'server_type != "tournament"'
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
@@ -135,6 +149,7 @@
         state: link
         src: '../windbot'
         path: '{{home_path}}/ygopro-server/windbot'
+      when: 'server_type != "tournament"'
     - name: directories
       file:
         state: directory
@@ -145,12 +160,29 @@
         - ygopro-server/replays
         - ygopro-server/logs
         - ygopro-server/config
+        - ygopro-server/plugins
+    - name: pre compat plugin
+      git:
+        repo: 'https://github.com/purerosefallen/srvpro-pre-compat'
+        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
+    - name: pre compat npm
+      npm:
+        path: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
+        registry: https://registry.npm.taobao.org
+    - name: pre compat config
+      copy:
+        src: files/srvpro/pre-compat-config.json
+        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat/config.json'
     - name: stop firewalld
       become: true
       systemd:
         name: firewalld
         state: stopped
-      when: "ansible_distribution == 'CentOS'" 
+      when: "ansible_distribution == 'CentOS'"
     - name: redis
       become: true
       systemd:

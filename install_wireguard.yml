@@ -1,6 +1,5 @@
 ---
 - hosts: wg_install
   remote_user: root
-  tasks:
+  roles:
     - name: wireguard
-      include: includes/wireguard.yml

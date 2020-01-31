@@ -1,6 +1,5 @@
 ---
 - hosts: docker
   remote_user: root
-  tasks:
+  roles:
     - name: docker
-      include: includes/docker.yml

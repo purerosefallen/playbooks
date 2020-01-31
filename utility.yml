@@ -1,11 +1,10 @@
 ---
 - hosts: utility
   remote_user: root
-  tasks:
+  roles:
     - name: docker
-      include: includes/docker.yml
-      static: false
       when: "ansible_distribution != 'Fedora'"
+  tasks:
     - name: utility directory
       file:
         path: /root/utility
