@@ -29,6 +29,14 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+    - name: pre compat plugin
+      git:
+        repo: 'https://github.com/purerosefallen/srvpro-pre-compat'
+        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
+        version: master
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: windbot
       git:
         repo: 'https://github.com/{{fork}}/windbot'
@@ -68,7 +76,7 @@
     - name: build
       make:
         chdir: '{{home_path}}/ygopro-new/build'
-        target: 'config=release -j{{ ansible_processor_vcpus }}'
+        target: 'config=release'
     - name: strip ygopro
       shell: strip bin/release/ygopro
       args:

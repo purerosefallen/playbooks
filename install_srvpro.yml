@@ -74,7 +74,7 @@
     - name: build
       make:
         chdir: '{{home_path}}/ygopro/build'
-        target: "config=release -j{{ ansible_processor_vcpus }}"
+        target: "config=release"
     - name: strip ygopro
       shell: strip bin/release/ygopro
       ignore_errors: true
