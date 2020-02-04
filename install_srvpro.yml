@@ -74,7 +74,7 @@
     - name: build
       make:
         chdir: '{{home_path}}/ygopro/build'
-        target: "config=release -j{{ lookup('pipe', 'nproc') }}"
+        target: "config=release -j{{ ansible_processor_vcpus }}"
     - name: strip ygopro
       shell: strip bin/release/ygopro
       ignore_errors: true
@@ -182,6 +182,7 @@
       systemd:
         name: firewalld
         state: stopped
+        enabled: false
       when: "ansible_distribution == 'CentOS'"
     - name: redis
       become: true

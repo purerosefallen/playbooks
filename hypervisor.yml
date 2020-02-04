@@ -6,6 +6,19 @@
       authorized_key:
         user: "{{ ansible_user_id }}"
         key: "{{ webvirt_ssh_key }}"
+    - name: get cpufreq policy path
+      find:
+        paths:
+          - /sys/devices/system/cpu/cpufreq/
+        file_type: directory
+      register: freq_list
+    - name: cpufreq performance
+      become: true
+      copy:
+        content: performance
+        dest: '{{item.path}}/scaling_governor'
+        unsafe_writes: true
+      with_items: '{{freq_list.files}}'
     - name: apt
       become: true
       when: "ansible_distribution != 'CentOS'"
@@ -56,6 +69,7 @@
       systemd:
         name: firewalld
         state: stopped
+        enabled: false
       when: "ansible_distribution == 'CentOS'"
     - name: flush forward table
       become: true
