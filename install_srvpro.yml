@@ -18,7 +18,7 @@
         update_cache: true
         state: latest
         name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,redis-server,p7zip-full
-      when: "ansible_distribution != 'CentOS'"
+      when: "ansible_os_family == 'Debian'"
     - name: epel 7
       become: true
       yum:
@@ -75,6 +75,8 @@
       make:
         chdir: '{{home_path}}/ygopro/build'
         target: "config=release"
+        params:
+          NUM_THREADS: '{{ansible_processor_vcpus}}'
     - name: strip ygopro
       shell: strip bin/release/ygopro
       ignore_errors: true

@@ -5,7 +5,7 @@
     update_cache: true
     state: latest
     name: mono-complete
-  when: "ansible_distribution != 'CentOS'"
+  when: "ansible_os_family == 'Debian'"
 - name: mono yum key
   become: true
   rpm_key:

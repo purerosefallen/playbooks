@@ -5,7 +5,7 @@
     update_cache: true
     state: latest
     name: curl,wget,apt-transport-https,lsb-release,gnupg,tar,unzip,rsync
-  when: "ansible_distribution != 'CentOS'"
+  when: "ansible_os_family == 'Debian'"
 - name: Docker key
   become: true
   apt_key:

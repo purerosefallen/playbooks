@@ -5,7 +5,7 @@
     update_cache: true
     state: latest
     name: curl,apt-transport-https,lsb-release,gnupg
-  when: "ansible_distribution != 'CentOS'"
+  when: "ansible_os_family == 'Debian'"
 - name: node apt key
   become: true
   apt_key:

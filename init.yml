@@ -6,7 +6,7 @@
       authorized_key:
         user: "{{ ansible_user_id }}"
         key: "{{ lookup('file', '../authorized_keys') }}"
-      # when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int != 8"
+      # when: "ansible_os_family == 'Debian' or ansible_distribution_major_version|int != 8"
     - name: sudoers
       become: true
       lineinfile:
@@ -80,14 +80,14 @@
         name: net.core.default_qdisc
         value: fq
         sysctl_set: true
-      when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int > 7"
+      when: "ansible_os_family == 'Debian' or ansible_distribution_major_version|int > 7"
     - name: TCP BBR
       become: true
       sysctl:
         name: net.ipv4.tcp_congestion_control
         value: bbr
         sysctl_set: true
-      when: "ansible_distribution != 'CentOS' or ansible_distribution_major_version|int > 7"
+      when: "ansible_os_family == 'Debian' or ansible_distribution_major_version|int > 7"
     - name: limit
       become: true
       pam_limits:
@@ -100,7 +100,7 @@
       apt:
         update_cache: true
         upgrade: dist
-      when: "ansible_distribution != 'CentOS'"
+      when: "ansible_os_family == 'Debian'"
     - name: yum update
       become: true
       yum:
@@ -127,7 +127,7 @@
         update_cache: true
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,xclip,astyle,python-setuptools,python-dev,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar,unzip,iperf,nmap,mosh
-      when: "ansible_distribution != 'CentOS'"
+      when: "ansible_os_family == 'Debian'"
     - name: Ubuntu packages
       become: true
       apt:
@@ -146,7 +146,7 @@
       become: true
       apt:
         autoremove: true
-      when: "ansible_distribution != 'CentOS'"
+      when: "ansible_os_family == 'Debian'"
     - name: epel 7
       become: true
       yum:
@@ -194,6 +194,12 @@
         dest: '~'
         creates: '~/.vim'
         remote_src: true
+    - name: ctags link
+      become: true
+      file:
+        src: /usr/bin/ctags
+        path: /usr/local/bin/ctags
+        state: link
     - name: git user.email
       git_config:
         name: user.email

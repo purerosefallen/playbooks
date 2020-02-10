@@ -32,7 +32,7 @@
       name: wireguard,resolvconf
       state: latest
       update_cache: yes
-    when: ansible_distribution != 'CentOS'
+    when: ansible_os_family == 'Debian'
   - name: WireGuard 源 (CentOS)
     become: true
     yum_repository:

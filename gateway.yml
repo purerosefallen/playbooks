@@ -1,0 +1,16 @@
+---
+  - hosts: iptables
+    remote_user: root
+    tasks:
+      - name: scripts
+        copy:
+          src: files/gateways/{{item}}
+          dest: ~/{{item}}
+          mode: 0755
+        with_items:
+          - iptables-gateways-interpreter.sh
+      - name: save
+        shell: 'sudo iptables-save > {{item}}'
+        with_items: 
+          - ipt
+          - ipt.bak

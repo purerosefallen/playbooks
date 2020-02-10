@@ -77,6 +77,8 @@
       make:
         chdir: '{{home_path}}/ygopro-new/build'
         target: 'config=release'
+        params:
+          NUM_THREADS: '{{ansible_processor_vcpus}}'
     - name: strip ygopro
       shell: strip bin/release/ygopro
       args:

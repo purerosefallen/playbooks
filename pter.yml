@@ -14,7 +14,7 @@
         update_cache: true
         state: latest
         name: curl,wget,build-essential,tar,unzip,python,rsync
-      when: "ansible_distribution != 'CentOS'"
+      when: "ansible_os_family == 'Debian'"
     - name: yum
       yum:
         state: latest
