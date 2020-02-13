@@ -10,7 +10,7 @@
   become: true
   rpm_key:
     key: 'http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef'
-  when: "ansible_distribution == 'CentOS'" 
+  when: "ansible_os_family == "RedHat"" 
 - name: mono yum source
   become: true
   yum_repository:
@@ -19,17 +19,17 @@
     baseurl: 'https://download.mono-project.com/repo/centos{{ansible_distribution_major_version}}-stable/'
     ip_resolve: 4
     gpgkey: "https://download.mono-project.com/repo/xamarin.gpg"
-  when: "ansible_distribution == 'CentOS'"
+  when: "ansible_os_family == "RedHat""
 - name: mono from yum
   become: true
   yum:
     state: latest
     update_cache: true
     name: mono-complete
-  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int <= 7"
+  when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7"
 - name: mono from dnf
   become: true
   dnf:
     state: latest
     name: mono-complete
-  when: "ansible_distribution == 'CentOS' and ansible_distribution_major_version|int == 8"
+  when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
