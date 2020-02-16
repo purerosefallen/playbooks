@@ -98,14 +98,14 @@
         name: '*'
         update_cache: true
         state: latest
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: dnf update
       become: true
       dnf:
         name: '*'
         #update_cache: true
         state: latest
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: fixup iptables with qemu
       become: true
       iptables:
@@ -129,35 +129,35 @@
       yum:
         state: latest
         name: epel-release
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: yum
       become: true
       yum:
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,iperf,nmap,libselinux-python,open-vm-tools
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: epel 8
       become: true
       dnf:
         state: latest
         name: epel-release
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: dnf
       become: true
       dnf:
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,nmap,python3-libselinux,open-vm-tools
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
       dnf:
         autoremove: true
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: disable selinux
       become: true
       selinux:
         state: disabled
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: disable selinux
       become: true
       lineinfile:
@@ -165,18 +165,18 @@
         regexp: '^SELINUX='
         line: 'SELINUX=disabled'
         backrefs: true
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: remove hwaddr in ifcfg
       become: true
       shell: 'sed -i "/HWADDR/d" /etc/sysconfig/network-scripts/ifcfg-*'
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: set hostname to localhost
       become: true
       lineinfile:
         path: /etc/sysconfig/network
         line: 'HOSTNAME=localhost.localdomain'
         insertafter: 'EOF'
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: ssh-keygen service
       become: true
       copy:

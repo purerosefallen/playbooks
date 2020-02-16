@@ -43,13 +43,13 @@
     state: latest
     update_cache: true
     name: epel-release
-  when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7"
 - name: docker from yum
   yum:
     state: latest
     update_cache: true
     name: rsync,tar,unzip,docker,python-pip
-  when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7"
 - name: systemd
   become: true
   systemd:

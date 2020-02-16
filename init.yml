@@ -107,14 +107,14 @@
         name: '*'
         update_cache: true
         state: latest
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: dnf update
       become: true
       dnf:
         name: '*'
         #update_cache: true
         state: latest
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: fixup iptables with qemu
       become: true
       iptables:
@@ -152,42 +152,42 @@
       yum:
         state: latest
         name: epel-release
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: yum
       become: true
       yum:
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,xclip,traceroute,tar,unzip,iperf,nmap,libselinux-python,mosh # astyle
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: epel 8
       become: true
       dnf:
         state: latest
         name: epel-release
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: dnf
       become: true
       dnf:
         state: latest
         name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,ctags,astyle,traceroute,tar,unzip,nmap,python3-libselinux,mosh # xclip
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: dnf autoremove
       become: true
       dnf:
         autoremove: true
-      when: "ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: disable selinux
       become: true
       selinux:
         state: disabled
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: disable selinux
       lineinfile:
         path: /etc/selinux/config
         regexp: '^SELINUX='
         line: 'SELINUX=disabled'
         backrefs: true
-      when: "ansible_os_family == "RedHat""
+      when: "ansible_os_family == 'RedHat'"
     - name: vim
       unarchive:
         src: https://minio.mycard.moe:9000/nanahira/nanahira-vim.tar.gz
