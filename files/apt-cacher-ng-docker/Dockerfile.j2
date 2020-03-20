@@ -1,0 +1,15 @@
+FROM debian:buster
+
+RUN apt update && apt install -y apt-cacher-ng && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i 's/# ForeGround: 0/ForeGround: 1/' /etc/apt-cacher-ng/acng.conf
+
+RUN sed -i 's/Remap-debrep: .*/Remap-debrep: \/debian ; http:\/\/{{apt_mirror}}\/debian/' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's/Remap-uburep: .*/Remap-uburep: \/ubuntu ; http:\/\/{{apt_mirror}}\/ubuntu/' /etc/apt-cacher-ng/acng.conf && \
+    sed -i 's/Remap-secdeb: .*/Remap-debdeb: \/debian-security ; http:\/\/{{apt_mirror}}\/debian-security/' /etc/apt-cacher-ng/acng.conf
+
+RUN ln -s /dev/stdout /var/log/apt-cacher-ng/apt-cacher.log && ln -s /dev/stderr /var/log/apt-cacher-ng.err
+
+EXPOSE 3142/tcp
+
+CMD [ "/usr/sbin/apt-cacher-ng", "-c", "/etc/apt-cacher-ng" ]

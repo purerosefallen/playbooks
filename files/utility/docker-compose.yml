@@ -16,7 +16,7 @@ services:
 
     apt-cacher-ng:
         restart: always
-        image: mycard/apt-cacher-ng
+        build: apt-cacher-ng-docker
         dns: 114.114.114.114
         ports:
             - '80:3142'
