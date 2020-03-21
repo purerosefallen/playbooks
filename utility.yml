@@ -1,9 +1,6 @@
 ---
 - hosts: utility
   remote_user: root
-  roles:
-    - name: docker
-      when: "ansible_distribution != 'Fedora'"
   tasks:
     - name: utility directory
       file:
