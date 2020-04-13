@@ -17,7 +17,7 @@
       apt:
         update_cache: true
         state: latest
-        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,redis-server,p7zip-full
+        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,redis-server,p7zip-full,liblua5.3-dev
       when: "ansible_os_family == 'Debian'"
     - name: epel 7
       become: true

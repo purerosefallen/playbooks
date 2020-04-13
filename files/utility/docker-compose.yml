@@ -1,33 +1,36 @@
 version: '2.4'
 services:
-    freedns:
-        restart: always
-        image: mycard/freedns-go
-        ports:
-            - '53:53'
-            - '53:53/udp'
-        command: "freedns-go -f 114.114.114.114:53 -c coredns:53 -l 0.0.0.0:53"
-    
-    coredns:
-        restart: always
-        image: coredns/coredns
-        volumes:
-            - ./Corefile:/Corefile:ro
+  freedns:
+    restart: always
+    image: mycard/freedns-go
+    ports:
+      - '53:53'
+      - '53:53/udp'
+    command: "freedns-go -f 114.114.114.114:53 -c coredns:53 -l 0.0.0.0:53"
+  
+  coredns:
+    restart: always
+    image: coredns/coredns
+    ports:
+      - '54:54'
+      - '54:54/udp'
+    volumes:
+      - ./Corefile:/Corefile:ro
 
-    apt-cacher-ng:
-        restart: always
-        build: apt-cacher-ng-docker
-        dns: 114.114.114.114
-        ports:
-            - '80:3142'
-        volumes:
-            - ./apt-cacher-ng/cache:/var/cache/apt-cacher-ng
+  apt-cacher-ng:
+    restart: always
+    build: apt-cacher-ng-docker
+    dns: 114.114.114.114
+    ports:
+      - '80:3142'
+    volumes:
+      - ./apt-cacher-ng/cache:/var/cache/apt-cacher-ng
 
-    kms:
-        restart: always
-        image: teddysun/kms
-        ports:
-            - 1688:1688
-        volumes:
-            - /etc/timezone:/etc/timezone:ro
-            - /etc/localtime:/etc/localtime:ro
+  kms:
+    restart: always
+    image: teddysun/kms
+    ports:
+      - 1688:1688
+    volumes:
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro

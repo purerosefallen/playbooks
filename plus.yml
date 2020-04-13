@@ -1,0 +1,20 @@
+---
+  - hosts: plus
+    remote_user: root
+    tasks:
+      - name: get dockerfile
+        synchronize:
+          src: ~/test/nginx-plus/
+          dest: '{{path}}/nginx-plus'
+      - name: replace docker-compose
+        lineinfile:
+          path: '{{path}}/docker-compose.yml'
+          regexp: '^([ \t]*)image: nginx.*$'
+          line: '\1build: ./nginx-plus'
+          backrefs: true
+      - name: docker-compose up -d
+        docker_compose:
+          project_src: '{{path}}'
+          build: true
+          services:
+            - nginx

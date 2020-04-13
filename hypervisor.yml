@@ -12,10 +12,10 @@
           - /sys/devices/system/cpu/cpufreq/
         file_type: directory
       register: freq_list
-    - name: cpufreq performance
+    - name: cpufreq
       become: true
       copy:
-        content: performance
+        content: '{{cpupower}}'
         dest: '{{item.path}}/scaling_governor'
         unsafe_writes: true
       with_items: '{{freq_list.files}}'
