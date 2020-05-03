@@ -45,14 +45,6 @@
         state: latest
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
       when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
-    - name: pre data
-      git:
-        repo: 'https://git.dev.tencent.com/mercury233/ygopro-pre-data.git'
-        dest: '{{home_path}}/ygopro-pre-data'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
@@ -169,22 +161,6 @@
         - ygopro-server/logs
         - ygopro-server/config
         - ygopro-server/plugins
-    - name: pre compat plugin
-      git:
-        repo: 'https://github.com/purerosefallen/srvpro-pre-compat'
-        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
-    - name: pre compat npm
-      npm:
-        path: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
-        registry: https://registry.npm.taobao.org
-    - name: pre compat config
-      copy:
-        src: files/srvpro/pre-compat-config.json
-        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat/config.json'
     - name: stop firewalld
       become: true
       systemd:

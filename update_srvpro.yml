@@ -6,14 +6,6 @@
 #    fork: mycard
     backup_name: '{{lookup("pipe","date +%m.%d")}}'
   tasks:
-    - name: pre data
-      git:
-        repo: 'https://git.dev.tencent.com/mercury233/ygopro-pre-data.git'
-        dest: '{{home_path}}/ygopro-pre-data'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
@@ -25,14 +17,6 @@
       git:
         repo: 'https://github.com/moecube/challonge'
         dest: '{{home_path}}/ygopro-server/challonge'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
-    - name: pre compat plugin
-      git:
-        repo: 'https://github.com/purerosefallen/srvpro-pre-compat'
-        dest: '{{home_path}}/ygopro-server/plugins/srvpro-pre-compat'
         version: master
         force: true
         accept_hostkey: true
