@@ -1,4 +1,4 @@
-- hosts: fileserver
+- hosts: samba
   remote_user: root
   tasks:
     - name: directory
@@ -8,8 +8,8 @@
     - name: docker-compose file
       copy:
         src: './files/samba-data/{{ inventory_hostname_short }}/docker-compose.yml'
-        dest: '~/fileserver/docker-compose.yml'
+        dest: '{{docker_compose_path}}/docker-compose.yml'
     - name: docker-compose up -d
       docker_compose:
-        project_src: ~/fileserver
+        project_src: '{{docker_compose_path}}'
         remove_orphans: true
