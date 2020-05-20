@@ -63,3 +63,4 @@ typings/
 *.retry
 
 /roles/init
+/files/samba-data

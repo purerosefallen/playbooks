@@ -15,7 +15,7 @@
     - name: cpufreq
       become: true
       copy:
-        content: '{{cpupower}}'
+        content: '{{cpufreq}}'
         dest: '{{item.path}}/scaling_governor'
         unsafe_writes: true
       with_items: '{{freq_list.files}}'

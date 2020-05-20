@@ -111,7 +111,7 @@
       iptables:
         chain: FORWARD
         flush: true
-      when: 'hypervisor is defined'
+      when: 'ansible_virtualization_role == "host"'
     - name: apt
       become: true
       apt:

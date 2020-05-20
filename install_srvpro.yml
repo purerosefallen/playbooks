@@ -63,12 +63,12 @@
       shell: ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro'
-      when: 'not no_lua_safe is defined'
+      when: 'not no_lua_safe'
     - name: premake5 gmake unsafe
       shell: env YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro'
-      when: 'no_lua_safe is defined'
+      when: 'no_lua_safe'
     - name: build
       make:
         chdir: '{{home_path}}/ygopro/build'
