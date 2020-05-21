@@ -25,7 +25,17 @@
       apt:
         state: latest
         update_cache: true
-        name: sudo,python,qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,python-libvirt,python-lxml,ksmtuned
+        name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned
+    - name: python for Focal
+      become: true
+      when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
+      apt:
+        name: python3,python-is-python3,python3-libvirt,python3-lxml
+    - name: python for non-Focal
+      become: true
+      when: ansible_os_family == 'Debian' and ansible_distribution_release != 'focal'
+      apt:
+        name: python,python-libvirt,python-lxml
     - name: epel 7
       become: true
       yum:
