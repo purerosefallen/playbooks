@@ -1,5 +1,0 @@
----
-- hosts: docker
-  remote_user: root
-  roles:
-    - name: docker
