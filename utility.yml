@@ -10,6 +10,12 @@
       synchronize:
         src: ./files/utility/
         dest: /root/utility
+        delete: yes
+        copy_links: yes
+        verify_host: no
+        recursive: yes
+        checksum: yes
+        archive: no
     - name: apt-cacker-ng Dockerfile directory
       file:
         path: /root/utility/apt-cacher-ng-docker
