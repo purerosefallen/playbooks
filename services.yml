@@ -8,12 +8,12 @@
           state: directory
       - name: docker-compose file
         template:
-          src: 'files/services/{{ service_name }}.yml.j2'
+          src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
           dest: '{{ service_path }}/docker-compose.yml'
       - name: data
         become: true
         synchronize:
-          src: 'files/services/{{ service_name }}/'
+          src: 'files/services/{{ service_name }}/data/'
           dest: '{{ service_path }}/data'
           delete: yes
           copy_links: yes
@@ -21,6 +21,14 @@
           verify_host: no
           checksum: yes                                                          
           archive: no
+      - name: templates
+        become: true
+        with_items: '{{ template_list }}'
+        template:
+          src: 'files/services/{{ service_name }}/templates/{{ item }}.j2'
+          dest: '{{ service_path }}/templates/{{ item }}'
+          owner: '{{ ansible_user_id }}'
+          follow: yes
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ service_path }}'
