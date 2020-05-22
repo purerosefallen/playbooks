@@ -1,0 +1,27 @@
+---
+  - hosts: services
+    remote_user: root
+    tasks:
+      - name: directory
+        file:
+          path: '{{ service_path }}'
+          state: directory
+      - name: docker-compose file
+        template:
+          src: 'files/services/{{ service_name }}.yml.j2'
+          dest: '{{ service_path }}/docker-compose.yml'
+      - name: data
+        become: true
+        synchronize:
+          src: 'files/services/{{ service_name }}/'
+          dest: '{{ service_path }}/data'
+          delete: yes
+          copy_links: yes
+          recursive: yes
+          verify_host: no
+          checksum: yes                                                          
+          archive: no
+      - name: docker-compose up -d
+        docker_compose:
+          project_src: '{{ service_path }}'
+          remove_orphans: true
