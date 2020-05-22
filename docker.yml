@@ -1,0 +1,21 @@
+---
+  - hosts: docker
+    remote_user: root
+    tasks:
+      - name: directory
+        file:
+          path: '{{path}}'
+          state: directory
+      - name: docker-compose file
+        template:
+          src: 'files/docker-compose/{{ project_name }}/.yml.j2'
+          dest: '{{path}}/docker-compose.yml'
+      - name: data
+        synchronize:
+          src: 'files/docker-compose/{{ project_name }}/'
+          dest: '{{path}}/data'
+          delete: yes
+      - name: docker-compose up -d
+        docker_compose:
+          project_src: '{{path}}'
+          remove_orphans: true

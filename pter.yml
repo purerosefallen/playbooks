@@ -7,7 +7,6 @@
     - name: nodejs
       vars:
         nodejs_version: 10
-    - name: docker
   tasks:
     - name: apt
       apt:
@@ -51,7 +50,12 @@
       synchronize:
         src: '{{ cert_path }}/'
         dest: /srv/certs
-        delete: true
+        delete: yes
+        copy_links: yes
+        verify_host: no
+        recursive: yes
+        checksum: yes
+        archive: no
       notify: launch
   handlers:
     - name: launch
