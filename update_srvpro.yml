@@ -16,7 +16,7 @@
     - name: srvpro npm
       npm:
         path: '{{home_path}}/ygopro-server'
-        registry: https://registry.npm.taobao.org
+        ci: true
     - name: challonge
       git:
         repo: 'https://github.com/moecube/challonge'
