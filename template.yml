@@ -78,3 +78,8 @@
       file:
         name: '~/.bash_history'
         state: absent
+    - name: poweroff
+      become: true
+      shell: poweroff
+      async: 0
+      poll: 0
