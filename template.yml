@@ -83,3 +83,6 @@
       shell: poweroff
       async: 0
       poll: 0
+  handlers:
+    - name: restart_sshd
+      ping:
