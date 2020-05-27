@@ -1,170 +1,36 @@
 ---
 - hosts: template
   remote_user: root
+  vars:
+    install_authorized_keys: false
+    allow_password: true
+    upgrade: true
+    reboot: true
+    china_mirror: false
+    mirror_debian: http://deb.debian.org
+    mirror_debian_security: http://security.debian.org
+    mirror_ubuntu: http://archive.ubuntu.com
+    mirror_ubuntu_security: http://security.ubuntu.com
   tasks:
-    - name: source
-      become: true
-      copy:
-        src: 'files/source/{{ansible_distribution|lower}}/sources.list'
-        dest: /etc/apt/sources.list
-      when: ansible_os_family == 'Debian'
-    - name: sudoers
-      become: true
-      lineinfile:
-        path: /etc/sudoers
-        insertafter: 'EOF'
-        line: '{{ ansible_user_id }} ALL=(ALL:ALL) NOPASSWD: ALL'
-        validate: /usr/sbin/visudo -cf %s
-      when: "ansible_user_id != 'root'"
-    - name: timezone
-      become: true
-      timezone:
-        name: Asia/Shanghai
-    - name: permit root login
-      become: true
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?PermitRootLogin (false|no).*$'
-        line: 'PasswordAuthentication yes'
-        backrefs: true
-    - name: sshd config
-      become: true
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?GSSAPIAuthentication (true|yes).*$'
-        line: 'GSSAPIAuthentication no'
-        backrefs: true
-    - name: sshd config
-      become: true
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^#?UseDNS (true|yes).*$'
-        line: 'UseDNS no'
-        backrefs: true
-    - name: net.ipv4.ip_forward
-      become: true
-      sysctl:
-        name: net.ipv4.ip_forward
-        value: 1
-        sysctl_set: true
-    - name: fs.inotify.max_user_watches
-      become: true
-      sysctl:
-        name: fs.inotify.max_user_watches
-        value: 524288
-        sysctl_set: true
-    - name: net.ipv4.conf.all.rp_filter
-      become: true
-      sysctl:
-        name: net.ipv4.conf.all.rp_filter
-        value: 0
-        sysctl_set: true
-    - name: net.ipv4.conf.default.rp_filter
-      become: true
-      sysctl:
-        name: net.ipv4.conf.default.rp_filter
-        value: 0
-        sysctl_set: true
-    - name: TCP BBR
-      become: true
-      sysctl:
-        name: net.core.default_qdisc
-        value: fq
-        sysctl_set: true
-      when: "ansible_os_family == 'Debian' or ansible_distribution_major_version|int > 7"
-    - name: TCP BBR
-      become: true
-      sysctl:
-        name: net.ipv4.tcp_congestion_control
-        value: bbr
-        sysctl_set: true
-      when: "ansible_os_family == 'Debian' or ansible_distribution_major_version|int > 7"
-    - name: limit
-      become: true
-      pam_limits:
-        domain: '{{ ansible_user_id }}'
-        limit_type: '-'
-        limit_item: nofile
-        value: 1048576
-    - name: apt upgrade
-      become: true
-      apt:
-        update_cache: true
-        upgrade: dist
-      when: "ansible_os_family == 'Debian'"
-    - name: yum update
-      become: true
-      yum:
-        name: '*'
-        update_cache: true
-        state: latest
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
-    - name: dnf update
-      become: true
-      dnf:
-        name: '*'
-        #update_cache: true
-        state: latest
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
-    - name: fixup iptables with qemu
-      become: true
-      iptables:
-        chain: FORWARD
-        flush: true
-      when: 'ansible_virtualization_role == "host"'
+    - name: tasks from init
+      include_tasks: './roles/init/tasks/{{item}}.yml'
+      with_items: 
+        - utility
+        - sshd_config
+        - upgrade
+        - sshd_config
+        - sysctl
     - name: apt
-      become: true
-      apt:
-        update_cache: true
-        state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,build-essential,p7zip-full,tcpdump,rsync,htop,locales,mtr,dnsutils,net-tools,traceroute,tar,unzip,iperf,iperf3,nmap,dnsutils,open-vm-tools
+      include_tasks: ./roles/init/tasks/apt.yml
       when: "ansible_os_family == 'Debian'"
-    - name: apt autoremove
-      become: true
-      apt:
-        autoremove: true
-      when: "ansible_os_family == 'Debian'"
-    - name: epel 7
-      become: true
-      yum:
-        state: latest
-        name: epel-release
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: yum
-      become: true
-      yum:
-        state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,iperf,iperf3,nmap,libselinux-python,open-vm-tools
+      include_tasks: ./roles/init/tasks/yum.yml
       when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
-    - name: epel 8
-      become: true
-      dnf:
-        state: latest
-        name: epel-release
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
     - name: dnf
-      become: true
-      dnf:
-        state: latest
-        name: curl,wget,git,vim,sudo,byobu,iftop,iotop,gcc,gcc-c++,make,autoconf,p7zip,p7zip-plugins,tcpdump,rsync,htop,mtr,net-tools,traceroute,tar,unzip,nmap,python3-libselinux,open-vm-tools
+      include_tasks: ./roles/init/tasks/dnf.yml
       when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
-    - name: dnf autoremove
-      become: true
-      dnf:
-        autoremove: true
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
-    - name: disable selinux
-      become: true
-      selinux:
-        state: disabled
-      when: "ansible_os_family == 'RedHat'"
-    - name: disable selinux
-      become: true
-      lineinfile:
-        path: /etc/selinux/config
-        regexp: '^SELINUX='
-        line: 'SELINUX=disabled'
-        backrefs: true
+    - name: redhat configures
+      include_tasks: ./roles/init/tasks/redhat_configures.yml
       when: "ansible_os_family == 'RedHat'"
     - name: remove hwaddr in ifcfg
       become: true
@@ -181,7 +47,30 @@
       become: true
       copy:
         content: |
+          [Unit]
+          Description=Regenerate SSH host keys
+          Before=sshd.service
           
+          [Service]
+          Type=oneshot
+          ExecStartPre=/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
+          ExecStart=/usr/bin/ssh-keygen -A -v
+          ExecStartPost=/bin/systemctl disable regenerate_ssh_host_keys
+          
+          [Install]
+          WantedBy=multi-user.target
+        dest: /lib/systemd/system/regenerate_ssh_host_keys.service
+    - name: systemd
+      become: true
+      systemd:
+        name: regenerate_ssh_host_keys
+        enabled: true
+        daemon_reload: true
+    - name: motd
+      become: true
+      copy:
+        content: Welcome to MyCard Cloud Service!
+        dest: /etc/motd
     - name: clean logs and hostkeys
       become: true
       shell: 'rm -rf /etc/ssh/ssh_host_* /var/log/*'
