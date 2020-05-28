@@ -28,7 +28,7 @@
       when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 7"
     - name: dnf
       include_tasks: ./roles/init/tasks/dnf.yml
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"
     - name: redhat configures
       include_tasks: ./roles/init/tasks/redhat_configures.yml
       when: "ansible_os_family == 'RedHat'"

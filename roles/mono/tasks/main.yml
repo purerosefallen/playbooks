@@ -32,4 +32,4 @@
   dnf:
     state: latest
     name: mono-complete
-  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
+  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"

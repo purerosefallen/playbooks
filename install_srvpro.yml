@@ -38,13 +38,13 @@
       dnf:
         state: latest
         name: epel-release
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"
     - name: dnf
       become: true
       dnf:
         state: latest
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
-      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int == 8"
+      when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
