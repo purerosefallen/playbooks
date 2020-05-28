@@ -5,12 +5,12 @@
     update_cache: true
     state: latest
     name: curl,apt-transport-https,lsb-release,gnupg
-  when: "ansible_os_family == 'Debian'"
+  when: ansible_os_family == 'Debian'
 - name: node apt key
   become: true
   apt_key:
     url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+  when: (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)
 - name: nodesource
   become: true
   with_items:
@@ -19,45 +19,45 @@
   apt_repository:
     filename: nodesource
     repo: '{{item}} https://deb.nodesource.com/node_{{nodejs_version}}.x {{ansible_distribution_release}} main'
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+  when: (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)
 - name: nodejs from nodesource
   become: true
   apt:
     state: latest
     name: nodejs
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)"
+  when: (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int < 9)
 - name: nodejs from apt
   become: true
   apt:
     state: latest
     name: npm
-  when: "(ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)"
+  when: (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int >= 18) or (ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 9)
 - name: epel 7
   become: true
   yum:
     state: latest
     update_cache: true
     name: epel-release
-  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7"
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
 - name: nodejs from yum
   become: true
   yum:
     state: latest
     update_cache: true
     name: npm
-  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7"
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
 - name: epel 8
   become: true
   dnf:
     state: latest
     name: epel-release
-  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
 - name: nodejs from dnf
   become: true
   dnf:
     state: latest
     name: nodejs,npm
-  when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8"
+  when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
 - name: npm
   become: true
   npm:
@@ -72,7 +72,7 @@
   become: true
   with_items: ['/usr/bin/node', '/usr/local/bin/node']
   shell: 'setcap cap_net_bind_service=+eip {{item}}'
-  when: "ansible_user_id != 'root'"
+  when: ansible_user_id != 'root'
 - name: npm
   become: true
   with_items:

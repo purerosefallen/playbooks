@@ -13,13 +13,13 @@
         update_cache: true
         state: latest
         name: curl,wget,build-essential,tar,unzip,python,rsync
-      when: "ansible_os_family == 'Debian'"
+      when: ansible_os_family == 'Debian'
     - name: yum
       yum:
         state: latest
         update_cache: true
         name: curl,wget,gcc,gcc-c++,make,tar,unzip,python,rsync
-      when: "ansible_os_family == 'RedHat'"
+      when: ansible_os_family == 'RedHat'
     - name: directories
       file:
         path: '/srv/{{item}}'
