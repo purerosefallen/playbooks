@@ -26,12 +26,12 @@
         state: latest
         update_cache: true
         name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned
-    - name: python for Focal
+    - name: python for focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
       apt:
         name: python3,python-is-python3,python3-libvirt,python3-lxml
-    - name: python for non-Focal
+    - name: python for non-focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release != 'focal'
       apt:
