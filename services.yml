@@ -28,6 +28,7 @@
           src: 'files/services/{{ service_name }}/templates/{{ item }}.j2'
           dest: '{{ service_path }}/templates/{{ item }}'
           owner: '{{ ansible_user_id }}'
+          group: '{{ ansible_user_id }}'
           follow: yes
       - name: docker-compose up -d
         docker_compose:
