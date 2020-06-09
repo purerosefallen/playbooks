@@ -12,28 +12,17 @@
         src: ~/.ssh/id_rsa.pub
         dest: ~/.ssh/
         mode: 0600
-    - name: apt
-      become: true
-      apt:
-        name: awscli,python,python3,python-pip,python3-pip
-        state: latest
-        update_cache: true
     - name: remove old ansible
       become: true
       apt:
-        name: ansible
+        name: ansible,awscli
         autoremove: true
+        purge: true
         state: absent
-    - name: upgrade pip
-      become: true
-      pip:
-        name: pip
-        state: latest
-        extra_args: -i https://mirrors.aliyun.com/pypi/simple/
     - name: install ansible
       become: true
       pip:
-        name: ansible
+        name: ansible,awscli
         state: latest
         extra_args: -i https://mirrors.aliyun.com/pypi/simple/
     - name: ansible
