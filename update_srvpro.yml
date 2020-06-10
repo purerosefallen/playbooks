@@ -6,6 +6,13 @@
 #    fork: mycard
     backup_name: '{{lookup("pipe","date +%m.%d")}}'
   tasks:
+    - name: pre data
+      git:
+        repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
+        dest: '{{home_path}}/ygopro-pre-data'
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: srvpro
       git:
         repo: 'https://github.com/{{fork}}/srvpro'

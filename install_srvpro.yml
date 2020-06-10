@@ -45,6 +45,13 @@
         state: latest
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
+    - name: pre data
+      git:
+        repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
+        dest: '{{home_path}}/ygopro-pre-data'
+        force: true
+        accept_hostkey: true
+        track_submodules: true
     - name: ygopro
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
