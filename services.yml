@@ -21,6 +21,13 @@
           verify_host: no
           checksum: yes                                                          
           archive: no
+          owner: yes
+          group: yes
+          perms: yes
+      - name: templates directory
+        file:
+          path: '{{ service_path }}/templates'
+          state: directory
       - name: templates
         become: true
         with_items: '{{ template_list }}'
@@ -34,3 +41,5 @@
         docker_compose:
           project_src: '{{ service_path }}'
           remove_orphans: true
+          build: '{{build}}'
+          pull: '{{pull}}'
