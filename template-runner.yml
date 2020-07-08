@@ -1,0 +1,108 @@
+---
+- hosts: runner-template
+  remote_user: root
+  vars:
+    install_authorized_keys: false
+    allow_password: false
+    upgrade: true
+    reboot: true
+    china_mirror: false
+    china_mirror_pip: true
+    china_mirror_docker: true
+    vm_agents_status: present
+    pip_executable: pip
+    pip_executable_install: pip
+    mirror_debian: http://deb.debian.org
+    mirror_debian_security: http://security.debian.org
+    mirror_ubuntu: http://archive.ubuntu.com
+    mirror_ubuntu_security: http://security.ubuntu.com
+    docker_template_path: ./roles/init/templates/daemon.json.j2
+    registry: https://registry.mycard.moe
+  tasks:
+    - name: authorized_key
+      authorized_key:
+        user: "{{ ansible_user_id }}"
+        key: "{{ lookup('file', './roles/init/files/authorized_keys') }}"
+    - name: tasks from init
+      include_tasks: './roles/init/tasks/{{item}}.yml'
+      with_items: 
+        - utility
+        - sshd_config
+        - upgrade
+        - sshd_config
+        - sysctl
+        - apt
+        - pip
+        - docker
+    - name: gitlab-runner apt key
+      become: true
+      apt_key:
+        url: https://packages.gitlab.com/gpg.key
+    - name: gitlab-runner repo
+      become: true
+      apt_repository:
+        repo: 'deb https://packages.gitlab.com/runner/gitlab-runner/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} main'
+        filename: gitlab-runner
+    - name: apt for some services
+      become: true
+      apt:
+        update_cache: true
+        name: gitlab-runner,git,git-lfs
+    - name: git lfs install
+      become: true
+      shell: git lfs install --skip-repo
+    - name: install node
+      include_role:
+        name: nodejs
+      vars:
+        nodejs_version: 12
+    - name: install mono
+      include_role:
+        name: mono
+    - name: ssh-keygen service
+      become: true
+      copy:
+        content: |
+          [Unit]
+          Description=Regenerate SSH host keys
+          Before=sshd.service
+          
+          [Service]
+          Type=oneshot
+          ExecStartPre=/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
+          ExecStart=/usr/bin/ssh-keygen -A -v
+          ExecStartPost=/bin/systemctl disable regenerate_ssh_host_keys
+          
+          [Install]
+          WantedBy=multi-user.target
+        dest: /lib/systemd/system/regenerate_ssh_host_keys.service
+    - name: systemd
+      become: true
+      systemd:
+        name: regenerate_ssh_host_keys
+        enabled: true
+        daemon_reload: true
+    - name: motd
+      become: true
+      copy:
+        content: GitLab runner
+        dest: /etc/motd
+    - name: clean logs and hostkeys
+      become: true
+      shell: 'rm -rf /etc/ssh/ssh_host_* /var/log/*'
+    - name: clean bash history
+      file:
+        name: '~/.bash_history'
+        state: absent
+    - name: poweroff
+      become: true
+      shell: poweroff
+      async: 0
+      poll: 0
+  handlers:
+    - name: restart_sshd
+      ping:
+    - name: reload_docker
+      ping:
+    - name: restart_docker
+      ping:
