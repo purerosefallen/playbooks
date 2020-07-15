@@ -82,11 +82,6 @@
         state: stopped
         enabled: false
       when: ansible_os_family == 'RedHat'
-    - name: flush forward table
-      become: true
-      iptables:
-        chain: FORWARD
-        flush: true
     - name: iptables save
       shell: 'sudo iptables-save > ~/ipt'
     - name: iptables forward script
