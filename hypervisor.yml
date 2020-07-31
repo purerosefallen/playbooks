@@ -22,7 +22,7 @@
       apt:
         state: latest
         update_cache: true
-        name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned,dmidecode,cockpit
+        name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned,dmidecode,cockpit,cockpit-machines
     - name: python for focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
@@ -45,7 +45,7 @@
       yum:
         state: latest
         update_cache: true
-        name: sudo,python,kvm,qemu-kvm,qemu-kvm-tools,qemu-img,libvirt,libvirt-python,libguestfs-tools,bridge-utils,virt-install,python-lxml,dmidecode,cockpit
+        name: sudo,python,kvm,qemu-kvm,qemu-kvm-tools,qemu-img,libvirt,libvirt-python,libguestfs-tools,bridge-utils,virt-install,python-lxml,dmidecode,cockpit,cockpit-machines
     - name: epel 8
       become: true
       dnf:
@@ -57,7 +57,7 @@
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
       dnf:
         state: latest
-        name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml,dmidecode,cockpit
+        name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml,dmidecode,cockpit,cockpit-machines
     - name: libvirt service
       become: true
       systemd:
