@@ -2,10 +2,6 @@
 - hosts: hypervisor
   remote_user: root
   tasks:
-    - name: authorized_key
-      authorized_key:
-        user: "{{ ansible_user_id }}"
-        key: "{{ webvirt_ssh_key }}"
     - name: get cpufreq policy path
       find:
         paths:
@@ -26,7 +22,7 @@
       apt:
         state: latest
         update_cache: true
-        name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned
+        name: qemu,qemu-kvm,libvirt-bin,bridge-utils,virtinst,libguestfs-tools,ksmtuned,dmidecode,cockpit
     - name: python for focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
@@ -49,7 +45,7 @@
       yum:
         state: latest
         update_cache: true
-        name: sudo,python,kvm,qemu-kvm,qemu-kvm-tools,qemu-img,libvirt,libvirt-python,libguestfs-tools,bridge-utils,virt-install,python-lxml
+        name: sudo,python,kvm,qemu-kvm,qemu-kvm-tools,qemu-img,libvirt,libvirt-python,libguestfs-tools,bridge-utils,virt-install,python-lxml,dmidecode,cockpit
     - name: epel 8
       become: true
       dnf:
@@ -61,7 +57,7 @@
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
       dnf:
         state: latest
-        name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml
+        name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml,dmidecode,cockpit
     - name: libvirt service
       become: true
       systemd:
@@ -104,3 +100,26 @@
         - iso
         - img
         - xml
+    - name: cockpit cert
+      become: true
+      copy:
+        content: |
+          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/fullchain.pem') }}
+          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/privkey.pem') }}
+        dest: /etc/cockpit/ws-certs.d/0-self-signed.cert
+        owner: root
+        group: cockpit-ws
+        mode: 0640
+      notify: restart_cockpit
+    - name: start cockpit
+      become: true
+      systemd:
+        name: cockpit
+        state: started
+        enabled: yes
+  handlers:
+    - name: restart_cockpit
+      become: true
+      systemd:
+        name: cockpit
+        state: restarted
