@@ -2,6 +2,11 @@
 - hosts: hypervisor
   remote_user: root
   tasks:
+    - name: webvirt ssh key
+      authorized_key:
+        user: "{{ ansible_user_id }}"
+        key: "{{ webvirt_ssh_key }}"
+      when: webvirt_ssh_key
     - name: get cpufreq policy path
       find:
         paths:

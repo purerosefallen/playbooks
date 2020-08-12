@@ -2,7 +2,7 @@
 - hosts: runner-template
   remote_user: root
   vars:
-    install_authorized_keys: false
+    authorized_keys: false
     allow_password: false
     upgrade: true
     reboot: true
