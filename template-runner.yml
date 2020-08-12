@@ -2,7 +2,7 @@
 - hosts: runner-template
   remote_user: root
   vars:
-    authorized_keys: false
+    authorized_keys: "{{ lookup('file', './roles/init/files/authorized_keys') }}"
     allow_password: false
     upgrade: true
     reboot: true
@@ -19,10 +19,6 @@
     docker_template_path: ./roles/init/templates/daemon.json.j2
     registry: https://registry.mycard.moe
   tasks:
-    - name: authorized_key
-      authorized_key:
-        user: "{{ ansible_user_id }}"
-        key: "{{ lookup('file', './roles/init/files/authorized_keys') }}"
     - name: tasks from init
       include_tasks: './roles/init/tasks/{{item}}.yml'
       with_items: 
