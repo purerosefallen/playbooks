@@ -21,8 +21,6 @@
           verify_host: no
           checksum: yes                                                          
           archive: no
-          owner: yes
-          group: yes
           perms: yes
       - name: templates directory
         file:

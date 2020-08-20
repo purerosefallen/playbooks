@@ -1,0 +1,20 @@
+---
+  - hosts: chnroute-reverse
+    remote_user: root
+    become: true
+    tasks:
+      - name: upload list
+        copy:
+          src: '../chnroute-reverse/chnroute-reverse.txt'
+          dest: '{{ansible_user_dir}}/chnroute-reverse.txt'
+          owner: '{{ansible_ssh_user}}'
+          group: '{{ansible_ssh_user}}'
+          mode: 0644
+        notify: reload_list
+    handlers:
+      - name: reload_list
+        shell: |
+          ipset create chnrouter hash:net maxelem 1000000 || true
+          ipset flush chnrouter
+          grep -P '^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)' {{ansible_user_dir}}/chnroute-reverse.txt | sort | uniq | xargs -I {} bash -c 'ipset add chnrouter {}'
+          true

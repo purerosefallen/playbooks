@@ -24,7 +24,6 @@
       pip:
         name: ansible,awscli
         state: latest
-        extra_args: -i https://mirrors.aliyun.com/pypi/simple/
     - name: ansible
       synchronize:
         src: ~/ansible/
