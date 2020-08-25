@@ -19,7 +19,7 @@
           copy_links: yes
           recursive: yes
           verify_host: no
-          checksum: yes                                                          
+          checksum: yes
           archive: no
           perms: yes
       - name: templates directory
