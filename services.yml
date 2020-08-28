@@ -22,7 +22,7 @@
           checksum: yes
           archive: no
           perms: yes
-        notify: handler
+        notify: handle
       - name: templates directory
         file:
           path: '{{ service_path }}/templates'
@@ -36,7 +36,7 @@
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
           follow: yes
-        notify: handler
+        notify: handle
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ service_path }}'
