@@ -1,0 +1,6 @@
+---
+- name: shell
+  become: true
+  shell: '{{handler.command}}'
+  args:
+    chdir: '{{handler.path}}'

@@ -1,0 +1,6 @@
+---
+- name: restart docker services
+  docker_compose:
+    project_src: '{{handler.path}}'
+    restarted: yes
+    services: '{{handler.services}}'

@@ -22,6 +22,7 @@
           checksum: yes
           archive: no
           perms: yes
+        notify: handler
       - name: templates directory
         file:
           path: '{{ service_path }}/templates'
@@ -35,9 +36,16 @@
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
           follow: yes
+        notify: handler
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ service_path }}'
           remove_orphans: true
           build: '{{build}}'
           pull: '{{pull}}'
+    handlers:
+      - name: handle
+        include_tasks: 'handlers/{{item.type}}.yaml'
+        vars:
+          handler: '{{item}}'
+        with_items: '{{handlers}}'

@@ -1,0 +1,6 @@
+---
+- name: restart systemd
+  become: true
+  systemd:
+    name: '{{handler.name}}'
+    state: restarted
