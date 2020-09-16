@@ -2,15 +2,9 @@
 - hosts: template
   remote_user: root
   vars:
+    install_fish_and_byobu: false
     authorized_keys: false
     allow_password: true
-    upgrade: true
-    reboot: true
-    china_mirror: false
-    mirror_debian: http://deb.debian.org
-    mirror_debian_security: http://security.debian.org
-    mirror_ubuntu: http://archive.ubuntu.com
-    mirror_ubuntu_security: http://security.ubuntu.com
   tasks:
     - name: tasks from init
       include_tasks: './roles/init/tasks/{{item}}.yml'

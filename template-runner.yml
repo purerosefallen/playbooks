@@ -1,35 +1,11 @@
 ---
 - hosts: runner-template
   remote_user: root
+  roles:
+    - init
   vars:
-    authorized_keys: "{{ lookup('file', './roles/init/files/authorized_keys') }}"
-    allow_password: false
-    upgrade: true
-    reboot: true
-    china_mirror: false
-    china_mirror_pip: true
-    china_mirror_docker: true
-    vm_agents_status: present
-    pip_executable: pip
-    pip_executable_install: pip
-    mirror_debian: http://deb.debian.org
-    mirror_debian_security: http://security.debian.org
-    mirror_ubuntu: http://archive.ubuntu.com
-    mirror_ubuntu_security: http://security.ubuntu.com
-    docker_template_path: ./roles/init/templates/daemon.json.j2
-    registry: https://registry.mycard.moe
+    install_fish_and_byobu: false
   tasks:
-    - name: tasks from init
-      include_tasks: './roles/init/tasks/{{item}}.yml'
-      with_items: 
-        - utility
-        - sshd_config
-        - upgrade
-        - sshd_config
-        - sysctl
-        - apt
-        - pip
-        - docker
     - name: gitlab-runner apt key
       become: true
       apt_key:
