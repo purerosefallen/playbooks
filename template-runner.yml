@@ -4,7 +4,7 @@
   roles:
     - init
   vars:
-    install_fish_and_byobu: false
+    customization: false
   tasks:
     - name: gitlab-runner apt key
       become: true
@@ -71,10 +71,3 @@
       shell: poweroff
       async: 0
       poll: 0
-  handlers:
-    - name: restart_sshd
-      ping:
-    - name: reload_docker
-      ping:
-    - name: restart_docker
-      ping:

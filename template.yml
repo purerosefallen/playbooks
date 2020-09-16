@@ -2,7 +2,7 @@
 - hosts: template
   remote_user: root
   vars:
-    install_fish_and_byobu: false
+    customization: false
     authorized_keys: false
     allow_password: true
   tasks:
@@ -77,6 +77,3 @@
       shell: poweroff
       async: 0
       poll: 0
-  handlers:
-    - name: restart_sshd
-      ping:
