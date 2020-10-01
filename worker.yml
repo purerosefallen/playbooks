@@ -1,8 +1,8 @@
 ---
 - hosts: worker
   remote_user: nanahira
-  roles:
-    - init
+  #roles:
+  #  - init
   tasks:
     - name: ssh
       copy:
@@ -21,6 +21,11 @@
         autoremove: true
         purge: true
         state: absent
+    - name: install ansible base
+      become: true
+      pip:
+        name: ansible-base
+        state: latest
     - name: install pip packages
       become: true
       pip:
