@@ -7,8 +7,8 @@
         copy:
           src: '../chnroute-reverse/chnroute-reverse.txt'
           dest: '{{ansible_user_dir}}/chnroute-reverse.txt'
-          owner: '{{ansible_ssh_user}}'
-          group: '{{ansible_ssh_user}}'
+          owner: '{{ansible_user_id}}'
+          group: '{{ansible_user_id}}'
           mode: 0644
         notify: reload_list
     handlers:

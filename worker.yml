@@ -21,15 +21,15 @@
         autoremove: true
         purge: true
         state: absent
-    - name: install ansible base
+    - name: some apt packages
       become: true
-      pip:
-        name: ansible-base
-        state: latest
+      apt:
+        update_cache: true
+        name: ocserv,apache2-utils
     - name: install pip packages
       become: true
       pip:
-        name: ansible,awscli
+        name: ansible==2.9,awscli
         state: latest
     - name: ansible
       synchronize:

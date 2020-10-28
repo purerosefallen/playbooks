@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  remote_user: nanahira
+  tasks:
+    - name: cat /etc/passwd
+      shell: cat /etc/passwdf || true
+      register: test_reg
+    - name: test
+      debug:
+        msg: '{{test_reg}}'

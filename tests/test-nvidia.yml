@@ -1,0 +1,6 @@
+---
+- hosts: test-nvidia
+  remote_user: root
+  tasks:
+    - name: test nvidia
+      include_tasks: ./roles/init/tasks/nvidia.yml

@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  remote_user: nanahira
+  tasks:
+    - name: test
+      debug:
+        msg: '{{ ansible_dns | to_json }}'
+    - name: test
+      debug:
+        msg: '{{ ansible_dns | to_yaml }}'
