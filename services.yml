@@ -37,6 +37,17 @@
           group: '{{ ansible_user_id }}'
           follow: yes
         notify: handle
+      - name: templates for frpc
+        become: true
+        with_items: '{{ frpc_instances }}'
+        template:
+          src: 'files/services/{{ service_name }}/templates/frpc.ini.j2'
+          dest: '{{ service_path }}/templates/frpc_{{ item.name }}.ini'
+          owner: '{{ ansible_user_id }}'
+          group: '{{ ansible_user_id }}'
+          follow: yes
+        when: service_name == "frpc"
+        notify: handle_frpc
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ service_path }}'
@@ -52,3 +63,13 @@
             path: '{{ service_path }}'
             services: '{{ handle_services }}'
         when: handle_services
+      - name: handle_frpc
+        include_tasks: 'handlers/docker.yaml'
+        vars:
+          handler: 
+            type: docker
+            path: '{{ service_path }}'
+            services:
+              - '{{ item.name }}'
+        with_items: '{{ frpc_instances }}'
+        when: service_name == "frpc"
