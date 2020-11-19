@@ -17,6 +17,7 @@
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
         dest: '{{home_path}}/ygopro-server'
+        version: '{{srvpro_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true
@@ -38,6 +39,7 @@
       git:
         repo: 'https://github.com/{{fork}}/windbot'
         dest: '{{home_path}}/windbot'
+        version: '{{windbot_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true
@@ -63,6 +65,7 @@
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
         dest: '{{home_path}}/ygopro-new'
+        version: '{{ygopro_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true

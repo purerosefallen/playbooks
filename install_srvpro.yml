@@ -8,7 +8,7 @@
   roles:
     - name: nodejs
       vars:
-        nodejs_version: 12
+        nodejs_version: 14
     - name: mono
       when: 'server_type != "tournament"'
   tasks:
@@ -56,7 +56,7 @@
       git:
         repo: 'https://github.com/{{fork}}/ygopro'
         dest: '{{home_path}}/ygopro'
-        version: server
+        version: '{{ygopro_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true
@@ -96,7 +96,7 @@
       git:
         repo: 'https://github.com/{{fork}}/windbot'
         dest: '{{home_path}}/windbot'
-        version: master
+        version: '{{windbot_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true
@@ -122,7 +122,7 @@
       git:
         repo: 'https://github.com/{{fork}}/srvpro'
         dest: '{{home_path}}/ygopro-server'
-        version: master
+        version: '{{srvpro_branch}}'
         force: true
         accept_hostkey: true
         track_submodules: true
