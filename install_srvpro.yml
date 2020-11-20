@@ -17,7 +17,7 @@
       apt:
         update_cache: true
         state: latest
-        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,redis-server,p7zip-full,liblua5.3-dev
+        name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,p7zip-full,liblua5.3-dev
       when: ansible_os_family == 'Debian'
     - name: epel 7
       become: true
@@ -31,7 +31,7 @@
       yum:
         state: latest
         update_cache: true
-        name: wget,git,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
+        name: wget,git,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
     - name: epel 8
       become: true
@@ -43,7 +43,7 @@
       become: true
       dnf:
         state: latest
-        name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,redis,p7zip,p7zip-plugins,tar,unzip
+        name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
     - name: pre data
       git:
