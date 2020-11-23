@@ -1,9 +1,9 @@
 ---
   - hosts: chnroute-reverse
     remote_user: root
-    become: true
     tasks:
       - name: upload list
+        become: true
         copy:
           src: '../chnroute-reverse/chnroute-reverse.txt'
           dest: '{{ansible_user_dir}}/chnroute-reverse.txt'
@@ -13,6 +13,7 @@
         notify: reload_list
     handlers:
       - name: reload_list
+        become: true
         shell: |
           ipset create chnrouter hash:net maxelem 1000000 || true
           ipset flush chnrouter
