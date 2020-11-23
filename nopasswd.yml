@@ -1,0 +1,13 @@
+---
+  - hosts: init
+    remote_user: nanahira
+    tasks:
+      - name: sudoers
+        become: true
+        copy:
+          dest: '/etc/sudoers.d/mycard_sudoers_{{ ansible_user_id }}'
+          content: '{{ ansible_user_id }} ALL=(ALL:ALL) NOPASSWD: ALL'
+          owner: root
+          group: root
+          mode: 0700
+        when: ansible_user_id != 'root'

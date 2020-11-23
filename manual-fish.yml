@@ -1,0 +1,10 @@
+---
+- hosts: init
+  remote_user: mycard
+  vars:
+    manual_fish_mode: true
+  tasks:
+    - name: fish tasks
+      include_tasks: '../init/tasks/fish.yml'
+    - name: git config tasks
+      include_tasks: '../init/tasks/git_config.yml'
