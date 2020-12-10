@@ -26,6 +26,11 @@
       apt:
         update_cache: true
         name: ocserv,apache2-utils
+    - name: upgrade pip
+      become: true
+      pip:
+        name: pip
+        state: latest
     - name: install pip packages
       become: true
       pip:
