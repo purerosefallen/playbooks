@@ -32,7 +32,7 @@
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
       apt:
-        name: python3,python-is-python3,python3-libvirt,python3-lxml,libvirt-dev
+        name: python3,python-is-python3,python3-libvirt,python3-lxml,libvirt-dev,libvirt-daemon
     - name: packages for non-focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release != 'focal'
