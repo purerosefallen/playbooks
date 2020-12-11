@@ -1,0 +1,43 @@
+---
+- hosts: runner-template
+  remote_user: root
+  roles:
+    - init
+  vars:
+    customization: false
+  tasks:
+    - name: ssh-keygen service
+      become: true
+      copy:
+        content: |
+          [Unit]
+          Description=Regenerate SSH host keys
+          Before=sshd.service
+          
+          [Service]
+          Type=oneshot
+          ExecStartPre=/bin/sh -c "/bin/rm -f -v /etc/ssh/ssh_host_*_key*"
+          ExecStart=/usr/bin/ssh-keygen -A -v
+          ExecStartPost=/bin/systemctl disable regenerate_ssh_host_keys
+          
+          [Install]
+          WantedBy=multi-user.target
+        dest: /lib/systemd/system/regenerate_ssh_host_keys.service
+    - name: systemd
+      become: true
+      systemd:
+        name: regenerate_ssh_host_keys
+        enabled: true
+        daemon_reload: true
+    - name: clean logs and hostkeys
+      become: true
+      shell: 'rm -rf /etc/ssh/ssh_host_* /var/log/*'
+    - name: clean bash history
+      file:
+        name: '~/.bash_history'
+        state: absent
+    - name: poweroff
+      become: true
+      shell: poweroff
+      async: 0
+      poll: 0
