@@ -4,17 +4,17 @@
     tasks:
       - name: directory
         file:
-          path: '{{ service_path }}'
+          path: '{{ ansible_user_dir }}/{{ service_path }}'
           state: directory
       - name: docker-compose file
         template:
           src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
-          dest: '{{ service_path }}/docker-compose.yml'
+          dest: '{{ ansible_user_dir }}/{{ service_path }}/docker-compose.yml'
       - name: data
         become: true
         synchronize:
           src: 'files/services/{{ service_name }}/data/'
-          dest: '{{ service_path }}/data'
+          dest: '{{ ansible_user_dir }}/{{ service_path }}/data'
           delete: yes
           copy_links: yes
           recursive: yes
@@ -25,14 +25,14 @@
         notify: handle
       - name: templates directory
         file:
-          path: '{{ service_path }}/templates'
+          path: '{{ ansible_user_dir }}/{{ service_path }}/templates'
           state: directory
       - name: templates
         become: true
         with_items: '{{ template_list }}'
         template:
           src: 'files/services/{{ service_name }}/templates/{{ item }}.j2'
-          dest: '{{ service_path }}/templates/{{ item }}'
+          dest: '{{ ansible_user_dir }}/{{ service_path }}/templates/{{ item }}'
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
           follow: yes
@@ -42,7 +42,7 @@
         with_items: '{{ frpc_instances }}'
         template:
           src: 'files/services/{{ service_name }}/templates/frpc.ini.j2'
-          dest: '{{ service_path }}/templates/frpc_{{ item.name }}.ini'
+          dest: '{{ ansible_user_dir }}/{{ service_path }}/templates/frpc_{{ item.name }}.ini'
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
           follow: yes
@@ -50,7 +50,7 @@
         notify: handle_frpc
       - name: docker-compose up -d
         docker_compose:
-          project_src: '{{ service_path }}'
+          project_src: '{{ ansible_user_dir }}/{{ service_path }}'
           remove_orphans: true
           build: '{{build}}'
           pull: '{{pull}}'
@@ -60,7 +60,7 @@
         vars:
           handler: 
             type: docker
-            path: '{{ service_path }}'
+            path: '{{ ansible_user_dir }}/{{ service_path }}'
             services: '{{ handle_services }}'
         when: handle_services
       - name: handle_frpc
@@ -68,7 +68,7 @@
         vars:
           handler: 
             type: docker
-            path: '{{ service_path }}'
+            path: '{{ ansible_user_dir }}/{{ service_path }}'
             services:
               - '{{ item.name }}'
         with_items: '{{ frpc_instances }}'

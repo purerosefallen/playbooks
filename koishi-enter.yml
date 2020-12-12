@@ -1,0 +1,13 @@
+- hosts: koishi-enter
+  remote_user: root
+  tasks:
+    - name: upload conf
+      copy:
+        src: ../koishi-enter/iptables-gateways
+        dest: '{{ansible_user_dir}}/iptables-gateways'
+      notify: reload_list
+  handlers:
+    - name: reload_list
+      shell: |
+        iptables -t nat -F PREROUTING
+        iptables-restore --noflush {{ansible_user_dir}}/iptables-gateways

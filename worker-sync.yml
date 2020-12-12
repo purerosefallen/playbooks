@@ -1,0 +1,11 @@
+---
+- hosts: worker
+  remote_user: nanahira
+  #roles:
+  #  - init
+  tasks:
+    - name: ansible
+      synchronize:
+        src: ~/ansible/
+        dest: ~/ansible
+        delete: true
