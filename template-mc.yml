@@ -3,8 +3,6 @@
   remote_user: root
   roles:
     - init
-  vars:
-    customization: false
   tasks:
     - name: ssh-keygen service
       become: true
