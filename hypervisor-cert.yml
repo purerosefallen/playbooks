@@ -1,0 +1,27 @@
+---
+- hosts: hypervisor
+  remote_user: root
+  tasks:
+    - name: cockpit cert
+      become: true
+      copy:
+        content: |
+          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/fullchain.pem') }}
+          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/privkey.pem') }}
+        dest: /etc/cockpit/ws-certs.d/0-self-signed.cert
+        owner: root
+        group: cockpit-ws
+        mode: 0640
+      notify: restart_cockpit
+    - name: start cockpit
+      become: true
+      systemd:
+        name: cockpit
+        state: started
+        enabled: yes
+  handlers:
+    - name: restart_cockpit
+      become: true
+      systemd:
+        name: cockpit
+        state: restarted
