@@ -62,7 +62,7 @@
             type: docker
             path: '{{ ansible_user_dir }}/{{ service_path }}'
             services: '{{ handle_services }}'
-        when: handle_services | bool
+        when: handle_services
       - name: handle_frpc
         include_tasks: 'handlers/docker.yaml'
         vars:
