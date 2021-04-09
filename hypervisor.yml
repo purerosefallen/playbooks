@@ -6,7 +6,7 @@
       authorized_key:
         user: "{{ ansible_user_id }}"
         key: "{{ webvirt_ssh_key }}"
-      when: webvirt_ssh_key
+      #when: webvirt_ssh_key
     - name: get cpufreq policy path
       find:
         paths:
