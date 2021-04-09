@@ -6,6 +6,7 @@
         file:
           path: '{{ ansible_user_dir }}/{{ service_path }}'
           state: directory
+          recurse: true
       - name: docker-compose file
         template:
           src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
