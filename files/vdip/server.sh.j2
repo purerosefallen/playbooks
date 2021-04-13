@@ -1,0 +1,17 @@
+#!/bin/bash
+
+up () {
+	iptables -t nat -N VDIP
+	iptables -t nat -A VDIP -p tcp -m multiport --dports {{ansible_ssh_port}} -j RETURN
+	iptables -t nat -A VDIP -p udp -m multiport --dports {{port}} -j RETURN
+	iptables -t nat -A VDIP -j DNAT --to-destination {{clientAddress}}
+	iptables -t nat -A PREROUTING -m addrtype --dst-type LOCAL -j VDIP
+}
+
+down() {
+	iptables -t nat -D PREROUTING -m addrtype --dst-type LOCAL -j VDIP
+	iptables -t nat -F VDIP
+	iptables -t nat -X VDIP
+}
+
+"$@"

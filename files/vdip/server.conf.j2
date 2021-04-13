@@ -1,0 +1,11 @@
+[Interface]
+Address = {{address}}/32
+PrivateKey = {{serverKey.priv}}
+ListenPort = {{port}}
+
+PostUp = /etc/wireguard/server.sh up
+PreDown = /etc/wireguard/server.sh down
+
+[Peer]
+PublicKey = {{clientKey.pub}}
+AllowedIPs = {{clientAddress}}/32

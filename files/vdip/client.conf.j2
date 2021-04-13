@@ -1,0 +1,12 @@
+[Interface]
+Address = {{clientAddress}}/32
+PrivateKey = {{clientKey.priv}}
+Table = 100
+PostUp = /sbin/ip rule add pref 80 to 10.0.0.0/7 lookup main; /sbin/ip rule add pref 80 to 172.16.0.0/12 lookup main; /sbin/ip rule add pref 80 to 192.168.0.0/16 lookup main; /sbin/ip rule add pref 100 fwmark 100 lookup 100; /sbin/ip route replace {{address}}/32 dev %i; ipset create vdiplocal hash:net maxelem 1000000; /sbin/ipset add vdiplocal 10.0.0.0/7; /sbin/ipset add vdiplocal 172.16.0.0/12; /sbin/ipset add vdiplocal 192.168.0.0/16; /sbin/iptables -t mangle -A PREROUTING -i %i ! -d 224.0.0.0/3 -m set ! --match-set vdiplocal src -j CONNMARK --set-xmark 100; /sbin/iptables -t mangle -A PREROUTING -m connmark --mark 100 -j CONNMARK --restore-mark; /sbin/iptables -t mangle -A OUTPUT -m connmark --mark 100 -j CONNMARK --restore-mark; true
+PreDown = /sbin/ip rule del pref 80 to 10.0.0.0/7 lookup main; /sbin/ip rule del pref 80 to 172.16.0.0/12 lookup main; /sbin/ip rule del pref 80 to 192.168.0.0/16 lookup main; /sbin/ip rule del pref 100 fwmark 100 lookup 100; /sbin/iptables -t mangle -D PREROUTING -i %i ! -d 224.0.0.0/3 -m set ! --match-set vdiplocal src -j CONNMARK --set-xmark 100; /sbin/iptables -t mangle -D PREROUTING -m connmark --mark 100 -j CONNMARK --restore-mark; /sbin/iptables -t mangle -D OUTPUT -m connmark --mark 100 -j CONNMARK --restore-mark; ipset destroy vdiplocal; true
+
+[Peer]
+PublicKey = {{serverKey.pub}}
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = {{ansible_ssh_host}}:{{port}}
+PersistentKeepalive = 1

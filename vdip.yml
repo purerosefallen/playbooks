@@ -1,0 +1,44 @@
+---
+- hosts: vdip
+  remote_user: root
+  tasks:
+    - name: wireguard
+      become: true
+      apt:
+        update_cache: true
+        name: wireguard
+      when: ansible_os_family == "Debian"
+    - name: wg directory
+      become: true
+      file:
+        path: /etc/wireguard
+        state: directory
+    - name: server conf
+      become: true
+      template:
+        src: ./files/vdip/server.conf.j2
+        dest: /etc/wireguard/wgvdip.conf
+      notify: restart_wg
+    - name: server sh
+      become: true
+      template:
+        src: ./files/vdip/server.sh.j2
+        dest: /etc/wireguard/server.sh
+        mode: 0777
+      notify: restart_wg
+    - name: client conf
+      template:
+        src: ./files/vdip/client.conf.j2
+        dest: '{{ansible_user_dir}}/client.conf'
+    - name: start wg
+      become: true
+      systemd:
+        name: 'wg-quick@wgvdip'
+        state: started
+        enabled: true
+  handlers:
+    - name: restart_wg
+      become: true
+      systemd:
+        name: 'wg-quick@wgvdip'
+        state: restarted
