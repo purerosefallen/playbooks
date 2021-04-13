@@ -6,8 +6,8 @@
         docker_compose:
           project_src: '{{ ansible_user_dir }}/{{ service_path }}'
           state: absent
-      - name: directory
-        become: true
-        file:
-          path: '{{ ansible_user_dir }}/{{ service_path }}'
-          state: absent
+      #- name: directory
+      #  become: true
+      #  file:
+      #    path: '{{ ansible_user_dir }}/{{ service_path }}'
+      #    state: absent
