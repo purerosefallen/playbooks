@@ -1,0 +1,14 @@
+- name: get cpufreq policy path
+  find:
+    paths:
+      - /sys/devices/system/cpu/cpufreq/
+    file_type: directory
+  register: freq_list
+- name: cpufreq
+  become: true
+  copy:
+    content: '{{cpufreq_policy}}'
+    dest: '{{item.path}}/scaling_governor'
+    unsafe_writes: true
+  with_items: '{{freq_list.files}}'
+  when: cpufreq_policy != 'none'

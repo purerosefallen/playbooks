@@ -1,0 +1,6 @@
+---
+- hosts: init
+  remote_user: root
+  tasks:
+    - name: cpufreq
+      include_tasks: './tasks/cpufreq.yml'
