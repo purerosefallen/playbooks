@@ -4,3 +4,4 @@
   tasks:
     - name: cpufreq
       include_tasks: './tasks/cpufreq.yml'
+      when: ansible_virtualization_role == "host"
