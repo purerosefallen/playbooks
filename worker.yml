@@ -46,6 +46,10 @@
         src: ~/.aws/
         dest: ~/.aws
         delete: true
+    - name: npm
+      copy:
+        src: ~/.npmrc
+        dest: ~/.npmrc
     #- name: premake5 sync
     #  become: true
     #  copy:
