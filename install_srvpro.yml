@@ -190,14 +190,9 @@
         - ygopro-server/plugins
     - name: stop firewalld
       become: true
+      ignore_errors: true
       systemd:
         name: firewalld
         state: stopped
         enabled: false
       when: ansible_os_family == 'RedHat'
-    - name: redis
-      become: true
-      systemd:
-        name: redis
-        state: started
-        enabled: true
