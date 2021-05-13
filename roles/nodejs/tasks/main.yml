@@ -68,6 +68,8 @@
 - name: nodejs version
   become: true
   shell: 'env NODE_MIRROR=https://npm.taobao.org/mirrors/node/ n {{nodejs_version}}'
+  args:
+    creates: /usr/local/bin/node
 - name: node setcap
   become: true
   with_items: ['/usr/bin/node', '/usr/local/bin/node']
