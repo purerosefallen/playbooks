@@ -16,35 +16,33 @@
       become: true
       apt:
         update_cache: true
-        state: latest
         name: wget,git,build-essential,libreadline-dev,libsqlite3-dev,libevent-dev,p7zip-full,liblua5.3-dev
       when: ansible_os_family == 'Debian'
     - name: epel 7
       become: true
       yum:
-        state: latest
         update_cache: true
         name: epel-release,curl
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
     - name: yum
       become: true
       yum:
-        state: latest
         update_cache: true
         name: wget,git,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int <= 7
     - name: epel 8
       become: true
       dnf:
-        state: latest
         name: epel-release
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
     - name: dnf
       become: true
       dnf:
-        state: latest
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
+    #- name: lua from source
+    #  include_tasks: tasks/lua-from-source.yml
+    #  when: ansible_os_family != 'Debian'
     - name: pre data
       git:
         repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
@@ -66,16 +64,38 @@
         dest: '{{home_path}}/ygopro/'
         creates: '{{home_path}}/ygopro/premake5'
         remote_src: true
+    - name: download lua
+      unarchive:
+        src: https://cdn01.moecube.com/nanahira/lua-5.3.6.tar.gz
+        dest: /tmp/
+        creates: /tmp/lua-5.3.6
+        remote_src: true
+      when: ansible_os_family != 'Debian'
+    - name: move lua 
+      shell: 'cp -rf /tmp/lua-5.3.6/src {{home_path}}/ygopro/lua ; cp -rf {{home_path}}/ygopro/premake/lua/premake4.lua {{home_path}}/ygopro/lua/'
+      args:
+        creates: '{{home_path}}/ygopro/lua/premake4.lua'
+      when: ansible_os_family != 'Debian'
     - name: premake5 gmake
       shell: ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro'
-      when: 'not no_lua_safe'
+      when: not no_lua_safe and ansible_os_family == 'Debian'
     - name: premake5 gmake unsafe
       shell: env YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro'
-      when: 'no_lua_safe'
+      when: no_lua_safe and ansible_os_family == 'Debian'
+    - name: premake5 gmake in-built lua
+      shell: env YGOPRO_BUILD_LUA=1 ./premake5 gmake
+      args:
+        chdir: '{{home_path}}/ygopro'
+      when: not no_lua_safe and ansible_os_family != 'Debian'
+    - name: premake5 gmake in-built lua unsafe
+      shell: env YGOPRO_BUILD_LUA=1 YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
+      args:
+        chdir: '{{home_path}}/ygopro'
+      when: no_lua_safe and ansible_os_family != 'Debian'
     - name: build
       make:
         chdir: '{{home_path}}/ygopro/build'

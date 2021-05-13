@@ -1,0 +1,17 @@
+- name: download lua
+  unarchive:
+    src: https://cdn01.moecube.com/nanahira/lua-5.3.6.tar.gz
+    dest: /tmp/
+    creates: /tmp/lua-5.3.6
+    remote_src: true
+- name: lua make linux
+  make:
+    chdir: /tmp/lua-5.3.6
+    target: linux
+    params:
+      NUM_THREADS: '{{ansible_processor_vcpus}}'
+- name: lua make install
+  become: true
+  make:
+    chdir: /tmp/lua-5.3.6
+    target: install
