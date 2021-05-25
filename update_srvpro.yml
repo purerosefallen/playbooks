@@ -73,12 +73,22 @@
       shell: ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro-new'
-      when: 'not no_lua_safe'
+      when: not no_lua_safe and ansible_os_family == 'Debian'
     - name: premake5 gmake unsafe
       shell: env YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
       args:
         chdir: '{{home_path}}/ygopro-new'
-      when: 'no_lua_safe'
+      when: no_lua_safe and ansible_os_family == 'Debian'
+    - name: premake5 gmake in-built lua
+      shell: env YGOPRO_BUILD_LUA=1 ./premake5 gmake
+      args:
+        chdir: '{{home_path}}/ygopro-new'
+      when: not no_lua_safe and ansible_os_family != 'Debian'
+    - name: premake5 gmake in-built lua unsafe
+      shell: env YGOPRO_BUILD_LUA=1 YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
+      args:
+        chdir: '{{home_path}}/ygopro-new'
+      when: no_lua_safe and ansible_os_family != 'Debian'
     - name: build
       make:
         chdir: '{{home_path}}/ygopro-new/build'
