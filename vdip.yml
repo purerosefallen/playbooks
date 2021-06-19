@@ -24,7 +24,7 @@
       template:
         src: ./files/vdip/server.sh.j2
         dest: /etc/wireguard/server.sh
-        mode: 0777
+        mode: 0755
       notify: restart_wg
     - name: client conf
       template:
