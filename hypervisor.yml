@@ -20,7 +20,7 @@
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release == 'focal'
       apt:
-        name: python-is-python3,
+        name: python-is-python3
     - name: packages for non-focal
       become: true
       when: ansible_os_family == 'Debian' and ansible_distribution_release != 'focal'
