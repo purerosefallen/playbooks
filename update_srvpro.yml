@@ -15,7 +15,7 @@
         track_submodules: true
     - name: srvpro
       git:
-        repo: 'https://github.com/{{fork}}/srvpro'
+        repo: 'https://code.mycard.moe/{{fork}}/srvpro'
         dest: '{{home_path}}/ygopro-server'
         version: '{{srvpro_branch}}'
         force: true
@@ -29,7 +29,7 @@
       when: srvpro_result.changed
     - name: challonge
       git:
-        repo: 'https://github.com/moecube/challonge'
+        repo: 'https://code.mycard.moe/mycard/challonge'
         dest: '{{home_path}}/ygopro-server/challonge'
         version: master
         force: true
@@ -37,7 +37,7 @@
         track_submodules: true
     - name: windbot
       git:
-        repo: 'https://github.com/{{fork}}/windbot'
+        repo: 'https://code.mycard.moe/{{fork}}/windbot'
         dest: '{{home_path}}/windbot'
         version: '{{windbot_branch}}'
         force: true
@@ -63,7 +63,7 @@
       shell: 'cp -rf {{home_path}}/ygopro {{home_path}}/ygopro-new'
     - name: ygopro
       git:
-        repo: 'https://github.com/{{fork}}/ygopro'
+        repo: 'https://code.mycard.moe/{{fork}}/ygopro'
         dest: '{{home_path}}/ygopro-new'
         version: '{{ygopro_branch}}'
         force: true
