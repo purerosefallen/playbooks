@@ -24,7 +24,7 @@
           {% endif %}
           ## set params
           GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT $KVM_KERNEL_PARAMS"
-      when: ansible_os_family == 'Debian'
+      when: ansible_os_family == 'Debian' and vtd is defined and vtd
     - name: apt
       become: true
       when: ansible_os_family == 'Debian'
