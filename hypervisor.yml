@@ -9,6 +9,22 @@
       #when: webvirt_ssh_key
     - name: cpufreq
       include_tasks: './tasks/cpufreq.yml'
+    - name: kernel params
+      become: true
+      blockinfile:
+        path: /etc/default/grub
+        marker: '# {mark} KVM kernel param block'
+        block: |
+          KVM_KERNEL_PARAMS=""
+          ## intel only, amd todo.
+          KVM_KERNEL_PARAMS="$KVM_KERNEL_PARAMS intel_iommu=on"
+          {% if vtd_pci_devices is defined and vtd_pci_devices and vtd_pci_devices | length > 0 %}
+          ## Devices for VT-D
+          KVM_KERNEL_PARAMS="$KVM_KERNEL_PARAMS vfio-pci.ids={{vtd_pci_devices | join(',')}}"
+          {% endif %}
+          ## set params
+          GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT $KVM_KERNEL_PARAMS"
+      when: ansible_os_family == 'Debian'
     - name: apt
       become: true
       when: ansible_os_family == 'Debian'
@@ -116,3 +132,6 @@
       systemd:
         name: cockpit
         state: restarted
+    - name: update_grub
+      become: true
+      shell: update-grub
