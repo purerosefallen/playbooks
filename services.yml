@@ -70,7 +70,5 @@
           handler: 
             type: docker
             path: '{{ ansible_user_dir }}/{{ service_path }}'
-            services:
-              - '{{ item.name }}'
-        with_items: '{{ frpc_instances }}'
+            services: '{{ frpc_instances | map(attribute="name") }}'
         when: service_name == "frpc"
