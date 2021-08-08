@@ -1,0 +1,17 @@
+---
+  - hosts: init
+    remote_user: root
+    tasks:
+      - name: railgun
+        uri:
+          url: https://m.lv5.ac/api/select
+          method: 'POST'
+          body_format: json
+          body: '{{railgun}}'
+          return_content: true
+          status_code:
+            - 200
+            - 201
+        changed_when: false
+        ignore_errors: true
+        when: railgun
