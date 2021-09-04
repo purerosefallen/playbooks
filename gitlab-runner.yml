@@ -1,0 +1,51 @@
+---
+  - hosts: gitlab-runner
+    remote_user: root
+    vars:
+      service_path: gitlab-runner
+      service_name: gitlab-runner
+    tasks:
+      - name: directory
+        file:
+          path: '{{ ansible_user_dir }}/{{ service_path }}'
+          state: directory
+          recurse: true
+      - name: docker-compose file
+        template:
+          src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
+          dest: '{{ ansible_user_dir }}/{{ service_path }}/docker-compose.yml'
+      - name: docker-compose up -d
+        docker_compose:
+          project_src: '{{ ansible_user_dir }}/{{ service_path }}'
+          remove_orphans: true
+          build: false
+          pull: '{{pull}}'
+      - name: register
+        shell: |
+          {% for instance in instances %}
+          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --registration-token '{{ instance.token }}' --description '{{ instance.desc }} runner on {{ inventory_hostname }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --tag-list docker --docker-privileged --docker-volumes /var/run/docker.sock --docker-image docker:20-git {% else %} --tag-list linux --docker-image git-registry.mycard.moe/mycard/docker-runner-base:latest {% endif %}
+
+          {% endfor %}
+        args:
+          chdir: '{{ ansible_user_dir }}/{{ service_path }}'
+          creates: '{{ ansible_user_dir }}/{{ service_path }}/config/config.toml'
+        notify: restart_runner
+        when: instances is defined and instances
+      - name: fixup cocurrent
+        become: true
+        lineinfile:
+          path: '{{ ansible_user_dir }}/{{ service_path }}/config/config.toml'
+          regexp: '^concurrent = 1'
+          line: 'concurrent = {{ansible_processor_vcpus}}'
+          backrefs: true
+        notify: restart_runner
+        when: ansible_processor_vcpus|int > 1
+    handlers:
+      - name: restart_runner
+        include_tasks: 'handlers/docker.yaml'
+        vars:
+          handler: 
+            type: docker
+            path: '{{ ansible_user_dir }}/{{ service_path }}'
+            services:
+              - runner
