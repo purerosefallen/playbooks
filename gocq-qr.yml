@@ -1,0 +1,9 @@
+---
+  - hosts: gocq
+    remote_user: root
+    tasks:
+      - name: fetch-qr
+        fetch:
+          src: '{{ ansible_user_dir }}/{{ service_path }}/templates/qrcode.png'
+          dest: '../collector/gocq-qr/qrcode-{{inventory_hostname_short}}.png'
+          flat: true
