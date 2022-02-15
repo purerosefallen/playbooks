@@ -1,0 +1,8 @@
+---
+- hosts: mys
+  tasks:
+    - name: mys
+      synchronize:
+        src: ~/test/mys/workspace/
+        dest: ~/mys-workspace
+        #delete: true

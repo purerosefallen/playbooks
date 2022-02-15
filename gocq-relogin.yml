@@ -1,0 +1,10 @@
+---
+  - hosts: gocq
+    remote_user: root
+    tasks:
+      - name: restart
+        docker_compose:
+          project_src: '{{ ansible_user_dir }}/{{ service_path }}'
+          restarted: true
+      - name: fetch-qr
+        include_tasks: ./tasks/gocq-fetch-qr.yml
