@@ -1,0 +1,65 @@
+---
+- hosts: pter
+  remote_user: root
+  vars:
+    pter_release: v0.6.12
+  roles:
+    - name: nodejs
+      vars:
+        nodejs_version: 10
+  tasks:
+    - name: apt
+      apt:
+        update_cache: true
+        state: latest
+        name: curl,wget,build-essential,tar,unzip,python,rsync
+      when: ansible_os_family == 'Debian'
+    - name: yum
+      yum:
+        state: latest
+        update_cache: true
+        name: curl,wget,gcc,gcc-c++,make,tar,unzip,python,rsync
+      when: ansible_os_family == 'RedHat'
+    - name: directories
+      file:
+        path: '/srv/{{item}}'
+        state: directory
+      with_items:
+        - daemon
+        - daemon-data
+    - name: download daemon
+      unarchive:
+        src: 'https://github.com/pterodactyl/daemon/releases/download/{{pter_release}}/daemon.tar.gz'
+        dest: /srv/daemon
+        creates: /srv/daemon/src
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+      notify: launch
+    - name: npm install
+      npm:
+        path: /srv/daemon
+        ci: true
+        production: true
+    - name: core.json
+      template:
+        src: files/pter/pter.json.j2
+        dest: /srv/daemon/config/core.json
+      notify: launch
+    - name: certs
+      synchronize:
+        src: '{{ cert_path }}/'
+        dest: /srv/certs
+        delete: yes
+        copy_links: yes
+        verify_host: no
+        recursive: yes
+        checksum: yes
+        archive: no
+      notify: launch
+  handlers:
+    - name: launch
+      shell: 'pm2 start src/index.js --name daemon && pm2 save && pm2 startup'
+      args:
+        chdir: /srv/daemon
+      ignore_errors: true
