@@ -4,25 +4,6 @@
   tasks:
     - name: set template
       set_fact:
-        config_content:
-          debug: false
-          uuid: '{{uuid}}'
-          token_id: '{{token_id}}'
-          token: '{{token}}'
-          api:
-            host: 0.0.0.0
-            port: '{{https_port}}'
-            ssl:
-              enabled: true
-              cert: '/certs/fullchain.pem'
-              key: '/certs/privkey.pem'
-            upload_limit: 100
-          system:
-            data: '{{data_path}}'
-            sftp:
-              bind_port: '{{sftp_port}}'
-          allowed_mounts: []
-          remote: '{{remote}}'
         docker_compose_content:
           version: '2.4'
           services:
@@ -38,14 +19,15 @@
                 - ./certs:/certs:ro
                 - ./config.yml:/etc/pterodactyl/config.yml
                 - '{{data_path}}:{{data_path}}'
+                - /tmp/pterodactyl:/tmp/pterodactyl
     - name: directory
       file:
         path: '{{ansible_user_dir}}/pterodactyl/certs'
         state: directory
         recurse: true
     - name: config file
-      copy:
-        content: '{{config_content | to_yaml}}'
+      template:
+        src: ./files/pter/config.yml.j2
         dest: '{{ansible_user_dir}}/pterodactyl/config.yml'
       notify: restart_pterodactyl
     - name: docker-compose.yml

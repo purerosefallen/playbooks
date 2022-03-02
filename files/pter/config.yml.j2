@@ -1,0 +1,82 @@
+debug: false
+app_name: {{ansible_ssh_host}}
+uuid: {{uuid}}
+token_id: {{token_id}}
+token: {{token}}
+api:
+  host: 0.0.0.0
+  port: {{https_port}}
+  ssl:
+    enabled: true
+    cert: /certs/fullchain.pem
+    key: /certs/privkey.pem
+  disable_remote_download: false
+  upload_limit: 100
+system:
+  root_directory: {{data_path}}
+  log_directory: {{data_path}}/log
+  data: {{data_path}}/container-data
+  archive_directory: {{data_path}}/archives
+  backup_directory: {{data_path}}/backups
+  username: pterodactyl
+  timezone: Asia/Shanghai
+  user:
+    uid: 100
+    gid: 101
+  disk_check_interval: 150
+  check_permissions_on_boot: true
+  enable_log_rotate: true
+  websocket_log_count: 150
+  sftp:
+    bind_address: 0.0.0.0
+    bind_port: {{sftp_port}}
+    read_only: false
+  crash_detection:
+    enabled: true
+    detect_clean_exit_as_crash: true
+    timeout: 60
+  backups:
+    write_limit: 0
+  transfers:
+    download_limit: 0
+docker:
+  network:
+    interface: 10.210.0.1
+    dns:
+    - {{dns}}
+    name: pterodactyl_nw
+    ispn: false
+    driver: bridge
+    network_mode: pterodactyl_nw
+    is_internal: false
+    enable_icc: true
+    interfaces:
+      v4:
+        subnet: 10.210.0.0/16
+        gateway: 10.210.0.1
+      v6:
+        subnet: fdba:17c8:6c94::/64
+        gateway: fdba:17c8:6c94::1011
+  domainname: ""
+  registries: {}
+  tmpfs_size: 100
+  container_pid_limit: 512
+  installer_limits:
+    memory: 1024
+    cpu: 100
+  overhead:
+    override: false
+    default_multiplier: 1.05
+    multipliers: {}
+  use_performant_inspect: true
+throttles:
+  enabled: true
+  lines: 2000
+  line_reset_interval: 1000
+remote: {{remote}}
+remote_query:
+  timeout: 30
+  boot_servers_per_page: 50
+allowed_mounts: []
+allowed_origins: []
+allow_cors_private_network: false
