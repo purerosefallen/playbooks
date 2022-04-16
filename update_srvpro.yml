@@ -69,26 +69,13 @@
         force: true
         accept_hostkey: true
         track_submodules: true
+    - name: debian params
+      set_fact:
+        premake_params: '{{premake_params}} --lua-deb'
     - name: premake5 gmake
-      shell: ./premake5 gmake
+      shell: './premake5 gmake {{premake_params}}'
       args:
         chdir: '{{home_path}}/ygopro-new'
-      when: not no_lua_safe and ansible_os_family == 'Debian'
-    - name: premake5 gmake unsafe
-      shell: env YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
-      args:
-        chdir: '{{home_path}}/ygopro-new'
-      when: no_lua_safe and ansible_os_family == 'Debian'
-    - name: premake5 gmake in-built lua
-      shell: env YGOPRO_BUILD_LUA=1 ./premake5 gmake
-      args:
-        chdir: '{{home_path}}/ygopro-new'
-      when: not no_lua_safe and ansible_os_family != 'Debian'
-    - name: premake5 gmake in-built lua unsafe
-      shell: env YGOPRO_BUILD_LUA=1 YGOPRO_NO_LUA_SAFE=1 ./premake5 gmake
-      args:
-        chdir: '{{home_path}}/ygopro-new'
-      when: no_lua_safe and ansible_os_family != 'Debian'
     - name: build
       make:
         chdir: '{{home_path}}/ygopro-new/build'
