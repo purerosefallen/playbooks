@@ -34,7 +34,7 @@
     - name: install pip packages
       become: true
       pip:
-        name: ansible==2.9,awscli
+        name: ansible==2.9,awscli,jinja2==3.0
         state: latest
     - name: ansible
       synchronize:
