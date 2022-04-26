@@ -5,14 +5,17 @@
     - name: cockpit cert
       become: true
       copy:
-        content: |
-          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/fullchain.pem') }}
-          {{ lookup('file', '../certs/{{cockpit_cert_domain}}/privkey.pem') }}
-        dest: /etc/cockpit/ws-certs.d/0-self-signed.cert
+        src: '../certs/{{cockpit_cert_domain}}/{{item.file}}'
+        dest: /etc/cockpit/ws-certs.d/0-self-signed.{{item.suffix}}
         owner: root
         group: cockpit-ws
         mode: 0640
       notify: restart_cockpit
+      with_items:
+        - file: cert.pem
+          suffix: cert
+        - file: privkey.pem
+          suffix: key
     - name: start cockpit
       become: true
       systemd:
