@@ -88,13 +88,6 @@
         state: stopped
         enabled: false
       when: ansible_os_family == 'RedHat'
-    - name: iptables save
-      shell: 'sudo iptables-save > ~/ipt'
-    - name: iptables forward script
-      copy:
-        src: files/hypervisor/iptables-forward.sh
-        dest: '~/iptables-forward.sh'
-        mode: 0755
     - name: permission for home path
       become: true
       file:
