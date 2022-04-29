@@ -1,0 +1,3 @@
+[submodule "roles/k8s"]
+	path = roles/k8s
+	url = https://github.com/geerlingguy/ansible-role-kubernetes
