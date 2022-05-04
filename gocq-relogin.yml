@@ -2,6 +2,10 @@
   - hosts: gocq
     remote_user: root
     tasks:
+      - name: remove session.token
+        file:
+          path: '{{ ansible_user_dir }}/{{ service_path }}/template/session.token'
+          state: absent
       - name: restart
         docker_compose:
           project_src: '{{ ansible_user_dir }}/{{ service_path }}'
