@@ -112,6 +112,7 @@
         group: cockpit-ws
         mode: 0640
       notify: restart_cockpit
+      when: cockpit_cert_domain is defined
       with_items:
         - file: cert.pem
           suffix: cert
