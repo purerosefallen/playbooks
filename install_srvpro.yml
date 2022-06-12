@@ -133,14 +133,6 @@
         force: true
         accept_hostkey: true
         track_submodules: true
-    - name: challonge
-      git:
-        repo: 'https://code.mycard.moe/mycard/challonge'
-        dest: '{{home_path}}/ygopro-server/challonge'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
     - name: fixup npm
       become: true
       file:

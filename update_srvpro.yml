@@ -27,14 +27,6 @@
         path: '{{home_path}}/ygopro-server'
         ci: true
       when: srvpro_result.changed
-    - name: challonge
-      git:
-        repo: 'https://code.mycard.moe/mycard/challonge'
-        dest: '{{home_path}}/ygopro-server/challonge'
-        version: master
-        force: true
-        accept_hostkey: true
-        track_submodules: true
     - name: windbot
       git:
         repo: 'https://code.mycard.moe/{{fork}}/windbot'
