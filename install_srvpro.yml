@@ -2,15 +2,16 @@
 - hosts: srvpro
   remote_user: root
   vars:
+    install: true
   #  home_path: ~
   #  fork: mycard
   #  server_type: public
   roles:
     - name: nodejs
       vars:
-        nodejs_version: 14
+        nodejs_version: 16
     - name: mono
-      when: 'server_type != "tournament"'
+      when: server_type is not defined or server_type != "tournament"
   tasks:
     - name: apt
       become: true
@@ -40,133 +41,12 @@
       dnf:
         name: curl,wget,gcc,gcc-c++,make,sqlite-devel,readline-devel,openssl-devel,libevent-devel,p7zip,p7zip-plugins,tar,unzip
       when: ansible_os_family == 'RedHat' and ansible_distribution_major_version|int >= 8
-    #- name: lua from source
-    #  include_tasks: tasks/lua-from-source.yml
-    #  when: ansible_os_family != 'Debian'
-    - name: pre data
-      git:
-        repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
-        dest: '{{home_path}}/ygopro-pre-data'
-        force: true
-        accept_hostkey: true
-        track_submodules: true
     - name: ygopro
-      git:
-        repo: 'https://code.mycard.moe/{{fork}}/ygopro'
-        dest: '{{home_path}}/ygopro'
-        version: '{{ygopro_branch}}'
-        force: true
-        accept_hostkey: true
-        track_submodules: true
-    - name: premake5
-      unarchive:
-        src: https://cdn01.moecube.com/ygopro-build-materials/premake-5.0.0-beta1-linux.tar.gz
-        dest: '{{home_path}}/ygopro/'
-        creates: '{{home_path}}/ygopro/premake5'
-        remote_src: true
-    - name: download lua
-      unarchive:
-        src: https://cdn01.moecube.com/ygopro-build-materials/lua-5.3.6.tar.gz
-        dest: /tmp/
-        creates: /tmp/lua-5.3.6
-        remote_src: true
-      when: ansible_os_family != 'Debian'
-    - name: move lua 
-      shell: 'cp -rf /tmp/lua-5.3.6 {{home_path}}/ygopro/lua ; cp -rf {{home_path}}/ygopro/premake/lua/premake5.lua {{home_path}}/ygopro/lua/'
-      args:
-        creates: '{{home_path}}/ygopro/lua/premake4.lua'
-      when: ansible_os_family != 'Debian'
-    - name: debian params
-      set_fact:
-        premake_params: '{{premake_params}} --lua-deb'
-    - name: premake5 gmake
-      shell: './premake5 gmake {{premake_params}}'
-      args:
-        chdir: '{{home_path}}/ygopro'
-    - name: build
-      make:
-        chdir: '{{home_path}}/ygopro/build'
-        target: "config=release"
-        params:
-          NUM_THREADS: '{{ansible_processor_vcpus}}'
-    - name: strip ygopro
-      shell: strip bin/release/ygopro
-      ignore_errors: true
-      args:
-        chdir: '{{home_path}}/ygopro'
-    - name: link ygopro
-      file:
-        state: link
-        src: './bin/release/ygopro'
-        path: '{{home_path}}/ygopro/ygopro'
-    - name: windbot
-      git:
-        repo: 'https://code.mycard.moe/{{fork}}/windbot'
-        dest: '{{home_path}}/windbot'
-        version: '{{windbot_branch}}'
-        force: true
-        accept_hostkey: true
-        track_submodules: true
-      when: 'server_type != "tournament"'
-    - name: build windbot
-      shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
-      args:
-        chdir: '{{home_path}}/windbot'
-      when: 'server_type != "tournament"'
-    - name: link windbot.exe
-      file:
-        state: link
-        src: './bin/Release/WindBot.exe'
-        path: '{{home_path}}/windbot/WindBot.exe'
-      when: 'server_type != "tournament"'
-    - name: link cards.cdb
-      file:
-        state: link
-        src: '{{home_path}}/ygopro/cards.cdb'
-        path: '{{home_path}}/windbot/cards.cdb'
-      when: 'server_type != "tournament"'
-    - name: srvpro
-      git:
-        repo: 'https://code.mycard.moe/{{fork}}/srvpro'
-        dest: '{{home_path}}/ygopro-server'
-        version: '{{srvpro_branch}}'
-        force: true
-        accept_hostkey: true
-        track_submodules: true
-    - name: fixup npm
-      become: true
-      file:
-        path: ~/.npm
-        owner: '{{ansible_user_id}}'
-        group: '{{ansible_user_id}}'
-        recurse: true
-      when: ansible_user_id != 'root'
-    - name: srvpro npm
-      npm:
-        path: '{{home_path}}/ygopro-server'
-        ci: true
-    - name: link ygopro repo
-      file:
-        state: link
-        src: '../ygopro'
-        path: '{{home_path}}/ygopro-server/ygopro'
-    - name: link windbot repo
-      file:
-        state: link
-        src: '../windbot'
-        path: '{{home_path}}/ygopro-server/windbot'
-      when: 'server_type != "tournament"'
-    - name: directories
-      file:
-        state: directory
-        path: '{{ home_path }}/{{ item }}'
-      with_items:
-        - ygopro/replay
-        - ygopro-server/decks
-        - ygopro-server/replays
-        - ygopro-server/logs
-        - ygopro-server/config
-        - ygopro-server/plugins
+      include_tasks: ./tasks/srvpro/ygopro.yml
+      vars:
+        ygopro_path: '{{home_path}}/ygopro'
+    - name: common
+      include_tasks: ./tasks/srvpro/common.yml
     - name: stop firewalld
       become: true
       ignore_errors: true

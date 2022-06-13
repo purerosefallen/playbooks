@@ -1,0 +1,66 @@
+- name: set default ygopro_fork
+  set_fact:
+    ygopro_fork: '{{fork}}'
+  when: ygopro_fork is not defined
+- name: set default ygopro_branch
+  set_fact:
+    ygopro_branch: server
+  when: ygopro_branch is not defined
+- name: ygopro
+  git:
+    repo: 'https://code.mycard.moe/{{ygopro_fork}}/ygopro'
+    dest: '{{ygopro_path}}'
+    version: '{{ygopro_branch}}'
+    force: true
+    accept_hostkey: true
+    track_submodules: true
+- name: premake5
+  unarchive:
+    src: https://cdn01.moecube.com/ygopro-build-materials/premake-5.0.0-beta1-linux.tar.gz
+    dest: '{{ygopro_path}}/'
+    creates: '{{ygopro_path}}/premake5'
+    remote_src: true
+- name: download lua
+  unarchive:
+    src: https://cdn02.moecube.com:444/ygopro-build-materials/lua-5.3.6.tar.gz
+    dest: /tmp/
+    creates: /tmp/lua-5.3.6
+    remote_src: true
+  when: ansible_os_family != 'Debian'
+- name: move lua 
+  shell: 'cp -rf /tmp/lua-5.3.6 {{ygopro_path}}/lua ; cp -rf {{ygopro_path}}/premake/lua/premake5.lua {{ygopro_path}}/lua/'
+  args:
+    creates: '{{ygopro_path}}/lua/premake5.lua'
+  when: ansible_os_family != 'Debian'
+- name: init default params
+  set_fact:
+    premake_params: ''
+  when: premake_params is not defined
+- name: debian params
+  set_fact:
+    premake_params: '{{premake_params}} --lua-deb'
+  when: ansible_os_family == 'Debian'
+- name: premake5 gmake
+  shell: './premake5 gmake {{premake_params}}'
+  args:
+    chdir: '{{ygopro_path}}'
+- name: build
+  make:
+    chdir: '{{ygopro_path}}/build'
+    target: "config=release"
+    params:
+      NUM_THREADS: '{{ansible_processor_vcpus}}'
+- name: strip ygopro
+  shell: strip bin/release/ygopro
+  ignore_errors: true
+  args:
+    chdir: '{{ygopro_path}}'
+- name: link ygopro
+  file:
+    state: link
+    src: './bin/release/ygopro'
+    path: '{{ygopro_path}}/ygopro'
+- name: replay directory
+  file:
+    state: directory
+    path: '{{ygopro_path}}/replay'

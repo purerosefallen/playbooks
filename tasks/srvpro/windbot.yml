@@ -1,0 +1,32 @@
+- name: set default windbot fork
+  set_fact:
+    windbot_fork: '{{fork}}'
+  when: windbot_fork is not defined
+- name: set default windbot branch
+  set_fact:
+    windbot_branch: master
+  when: windbot_branch is not defined
+- name: windbot
+  git:
+    repo: 'https://code.mycard.moe/{{windbot_fork}}/windbot'
+    dest: '{{home_path}}/windbot'
+    version: '{{windbot_branch}}'
+    force: true
+    accept_hostkey: true
+    track_submodules: true
+- name: build windbot
+  shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
+  args:
+    chdir: '{{home_path}}/windbot'
+- name: link windbot.exe
+  file:
+    state: link
+    src: './bin/Release/WindBot.exe'
+    path: '{{home_path}}/windbot/WindBot.exe'
+  when: install
+- name: link cards.cdb
+  file:
+    state: link
+    src: '{{home_path}}/ygopro/cards.cdb'
+    path: '{{home_path}}/windbot/cards.cdb'
+  when: install

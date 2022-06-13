@@ -1,0 +1,53 @@
+- name: pre data
+  git:
+    repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
+    dest: '{{home_path}}/ygopro-pre-data'
+    force: true
+    accept_hostkey: true
+    track_submodules: true
+- name: windbot
+  include_tasks: ./windbot.yml
+  when: server_type is not defined or server_type != "tournament"
+- name: set default srvpro_fork
+  set_fact:
+    srvpro_fork: '{{fork}}'
+  when: srvpro_fork is not defined
+- name: set default srvpro_branch
+  set_fact:
+    srvpro_branch: master
+  when: srvpro_branch is not defined
+- name: srvpro
+  git:
+    repo: 'https://code.mycard.moe/{{srvpro_fork}}/srvpro'
+    dest: '{{home_path}}/ygopro-server'
+    version: '{{srvpro_branch}}'
+    force: true
+    accept_hostkey: true
+    track_submodules: true
+  register: srvpro_result
+- name: srvpro npm
+  npm:
+    path: '{{home_path}}/ygopro-server'
+    ci: '{{install}}'
+  when: srvpro_result.changed or install
+- name: link ygopro repo
+  file:
+    state: link
+    src: '../ygopro'
+    path: '{{home_path}}/ygopro-server/ygopro'
+- name: link windbot repo
+  file:
+    state: link
+    src: '../windbot'
+    path: '{{home_path}}/ygopro-server/windbot'
+  when: server_type is not defined or server_type != "tournament"
+- name: srvpro directories
+  file:
+    state: directory
+    path: '{{ home_path }}/ygopro-server/{{ item }}'
+  with_items:
+    - ygopro-server/decks
+    - ygopro-server/replays
+    - ygopro-server/logs
+    - ygopro-server/config
+    - ygopro-server/plugins
