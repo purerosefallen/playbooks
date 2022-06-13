@@ -46,8 +46,8 @@
     state: directory
     path: '{{ home_path }}/ygopro-server/{{ item }}'
   with_items:
-    - ygopro-server/decks
-    - ygopro-server/replays
-    - ygopro-server/logs
-    - ygopro-server/config
-    - ygopro-server/plugins
+    - decks
+    - replays
+    - logs
+    - config
+    - plugins
