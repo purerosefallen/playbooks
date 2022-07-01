@@ -68,6 +68,15 @@
       dnf:
         state: latest
         name: sudo,python3,qemu-kvm,qemu-img,libvirt,python3-libvirt,libguestfs-tools,virt-install,python3-lxml,dmidecode,cockpit,cockpit-machines
+    - name: qemu conf
+      become: true
+      blockinfile:
+        path: /etc/crontab
+        marker: '# {mark} MyCard NextGen Router block'
+        block: |
+          user = "{{ansible_user_id}}"
+          group = "{{ansible_user_id}}"
+      notify: restart_libvirt
     - name: libvirt service
       become: true
       systemd:
@@ -123,6 +132,11 @@
       become: true
       systemd:
         name: cockpit
+        state: restarted
+    - name: restart_libvirt
+      become: true
+      systemd:
+        name: libvirtd
         state: restarted
     - name: update_grub
       become: true
