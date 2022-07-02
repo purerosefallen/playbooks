@@ -37,9 +37,10 @@
         name: ansible==2.9.6,awscli,jinja2==3.0.0 
         state: latest
     - name: ansible
+      become: true
       synchronize:
         src: ~/ansible/
-        dest: ~/ansible
+        dest: '{{ansible_user_dir}}/ansible'
         delete: true
     - name: aws
       synchronize:

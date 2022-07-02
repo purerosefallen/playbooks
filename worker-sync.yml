@@ -5,7 +5,8 @@
   #  - init
   tasks:
     - name: ansible
+      become: true
       synchronize:
         src: ~/ansible/
-        dest: ~/ansible
+        dest: '{{ansible_user_dir}}/ansible'
         delete: true
