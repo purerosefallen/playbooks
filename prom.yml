@@ -1,0 +1,15 @@
+- hosts: prom
+  remote_user: root
+  tasks:
+    - name: upload
+      copy:
+        src: ./files/prometheus.yaml
+        dest: '{{prom_file}}'
+      notify: restart_prometheus
+  handlers:
+    - name: restart_prometheus
+      docker_compose:
+        project_src: '{{prom_path}}'
+        services:
+          - prometheus
+        restarted: true
