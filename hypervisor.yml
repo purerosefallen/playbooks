@@ -74,8 +74,8 @@
         path: /etc/crontab
         marker: '# {mark} MyCard NextGen Router block'
         block: |
-          user = "{{ansible_user_id}}"
-          group = "{{ansible_user_id}}"
+          user = "root"
+          group = "root"
       notify: restart_libvirt
     - name: libvirt service
       become: true
