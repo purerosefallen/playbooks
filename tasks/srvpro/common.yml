@@ -35,12 +35,13 @@
     state: link
     src: '../ygopro'
     path: '{{home_path}}/ygopro-server/ygopro'
+  when: install
 - name: link windbot repo
   file:
     state: link
     src: '../windbot'
     path: '{{home_path}}/ygopro-server/windbot'
-  when: server_type is not defined or server_type != "tournament"
+  when: install and (server_type is not defined or server_type != "tournament")
 - name: srvpro directories
   file:
     state: directory
@@ -51,3 +52,4 @@
     - logs
     - config
     - plugins
+  when: install
