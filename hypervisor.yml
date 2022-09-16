@@ -71,7 +71,7 @@
     - name: qemu conf
       become: true
       blockinfile:
-        path: /etc/crontab
+        path: /etc/libvirt/qemu/conf
         marker: '# {mark} MyCard NextGen Router block'
         block: |
           user = "root"
