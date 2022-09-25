@@ -26,6 +26,12 @@
       apt:
         update_cache: true
         name: ocserv,apache2-utils
+    - name: stop ocserv
+      become: true
+      service:
+        name: ocserv
+        state: stopped
+        enabled: false
     - name: upgrade pip
       become: true
       pip:
