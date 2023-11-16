@@ -24,6 +24,10 @@
           archive: no
           perms: yes
         notify: handle
+      - name: specific files
+        copy: '{{item}}'
+        with_items: '{{ specific_files }}'
+        notify: handle
       - name: templates directory
         file:
           path: '{{ ansible_user_dir }}/{{ service_path }}/templates'

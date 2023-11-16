@@ -12,9 +12,9 @@
           group: root
           mode: 0700
         when: ansible_ssh_user != 'root'
-      - name: python3-distro
+      - name: some apt packages
         become: true
         apt:
-          name: python3-distro
+          name: python3-distro,gnupg2
           update_cache: true
         ignore_errors: true

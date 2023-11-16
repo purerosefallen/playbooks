@@ -6,6 +6,11 @@
         src: ./files/prometheus.yaml
         dest: '{{prom_file}}'
       notify: restart_prometheus
+    - name: upload rules
+      copy:
+        src: ./files/prometheus-rules.yaml
+        dest: '{{rules_file}}'
+      notify: restart_prometheus
   handlers:
     - name: restart_prometheus
       docker_compose:

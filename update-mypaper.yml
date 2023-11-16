@@ -1,0 +1,13 @@
+---
+- hosts: mypaper
+  remote_user: root
+  tasks:
+    - name: synchronize
+      synchronize:
+        src: ~/zeeai/mypaper-vue/dist/
+        dest: ~/nginx/mypaper-vue
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.git*"
+          - "--exclude=node_modules"

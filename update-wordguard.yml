@@ -1,0 +1,19 @@
+---
+- hosts: wordguard
+  remote_user: root
+  tasks:
+    - name: synchronize
+      synchronize:
+        src: ~/zeeai/word-checker/
+        dest: ~/services/wordguard
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.git*"
+          - "--exclude=node_modules"
+    - name: docker-compose up -d
+      docker_compose:
+        project_src: ~/services
+        build: yes
+        services:
+          - wordguard

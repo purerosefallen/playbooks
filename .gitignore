@@ -65,4 +65,4 @@ typings/
 /roles/init
 /files/samba-data
 /files/services
-/files/prometheus.yaml
+/files/prometheus*.yaml

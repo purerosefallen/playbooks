@@ -9,7 +9,7 @@
   roles:
     - name: nodejs
       vars:
-        nodejs_version: 16
+        nodejs_version: 18
     - name: mono
       when: server_type is not defined or server_type != "tournament"
   tasks:
