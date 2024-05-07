@@ -26,6 +26,6 @@
   copy:
     content: |
       #!/bin/bash
-      docker run -it --rm -v /home/nanahira:/home/nanahira --workdir $PWD --net=host ansible-workspace /usr/local/bin/{{item}} "$@"
+      docker run -it --rm -v {{ansible_user_dir}}:{{ansible_user_dir}} --workdir $PWD --net=host ansible-workspace /usr/local/bin/{{item}} "$@"
     dest: /usr/local/bin/{{item}}
     mode: 0755
