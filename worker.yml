@@ -40,32 +40,20 @@
     - name: install pip packages
       become: true
       pip:
-        name: ansible<2.11.0,awscli
+        name: awscli
         state: latest
-    - name: set ansible module_utils path
-      set_fact:
-        module_util_path: '/usr/local/lib/python{{ ansible_python.version.major }}.{{ ansible_python.version.minor }}/dist-packages/ansible/module_utils'
-    - name: remove deprecated six
-      become: true
-      file:
-        path: '{{module_util_path}}/six'
-        state: absent
-    - name: copy six.py
-      become: true
-      copy:
-        src: /usr/lib/python3/dist-packages/six.py
-        dest: '{{module_util_path}}/six.py'
-    - name: copy urls.py
-      become: true
-      copy:
-        src: ./files/urls.py
-        dest: '{{module_util_path}}/urls.py'
     - name: ansible
       become: true
       synchronize:
         src: ~/ansible/
         dest: '{{ansible_user_dir}}/ansible'
         delete: true
+    - name: install ansible for python <= 3.11
+      include_tasks: ./tasks/worker-python3.11.yml
+      when: ansible_python.version.major == 3 and ansible_python.version.minor < 12
+    - name: install ansible for python >= 3.12
+      include_tasks: ./tasks/worker-python3.12.yml
+      when: ansible_python.version.major == 3 and ansible_python.version.minor >= 12
     - name: aws
       synchronize:
         src: ~/.aws/

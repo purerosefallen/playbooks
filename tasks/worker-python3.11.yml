@@ -1,0 +1,23 @@
+- name: install pip packages
+  become: true
+  pip:
+    name: 'ansible<3.11.0'
+    state: latest
+- name: set ansible module_utils path
+  set_fact:
+    module_util_path: '/usr/local/lib/python{{ ansible_python.version.major }}.{{ ansible_python.version.minor }}/dist-packages/ansible/module_utils'
+- name: remove deprecated six
+  become: true
+  file:
+    path: '{{module_util_path}}/six'
+    state: absent
+- name: copy six.py
+  become: true
+  copy:
+    src: /usr/lib/python3/dist-packages/six.py
+    dest: '{{module_util_path}}/six.py'
+- name: copy urls.py
+  become: true
+  copy:
+    src: ./files/urls.py
+    dest: '{{module_util_path}}/urls.py'

@@ -1,0 +1,31 @@
+- name: build docker image 
+  # docker build -t ansible-workspace --build-arg UID=$(id -u) --build-arg GID=$(id -g) --build-arg USERNAME=$(w
+  docker_image:
+    name: ansible-workspace
+    source: build
+    build:
+      path: '{{ansible_user_dir}}/ansible/workspace-build'
+      args:
+        UID: '{{ ansible_user_uid }}'
+        GID: '{{ ansible_user_gid }}'
+        USERNAME: '{{ ansible_user_id }}'
+- name: replace ansible executables
+  with_items:
+    - ansible
+    - ansible-config
+    - ansible-connection
+    - ansible-console
+    - ansible-doc
+    - ansible-galaxy
+    - ansible-inventory
+    - ansible-playbook
+    - ansible-pull
+    - ansible-test
+    - ansible-vault
+  become: true
+  copy:
+    content: |
+      #!/bin/bash
+      docker run -it --rm -v /home/nanahira:/home/nanahira --workdir $PWD --net=host ansible-workspace /usr/local/bin/{{item}} "$@"
+    dest: /usr/local/bin/{{item}}
+    mode: 0755
