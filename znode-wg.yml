@@ -1,0 +1,84 @@
+---
+  - hosts: znodes
+    remote_user: root
+    vars:
+      openvpn_docker_compose:
+        version: '2.4'
+        services:
+          openvpn:
+            restart: always
+            image: kylemanna/openvpn
+            cap_add:
+              - NET_ADMIN
+              - NET_RAW
+            network_mode: host
+            volumes:
+              - ./data:/etc/openvpn
+      openvpn_client_name: orange
+    tasks:
+      - name: public key
+        authorized_key:
+          user: '{{ ansible_ssh_user }}'
+          key: '{{ ssh_pubkey }}'
+      - name: wg directory
+        become: true
+        file:
+          path: '/etc/wireguard'
+          state: directory
+          recurse: true
+      - name: wg config
+        become: true
+        copy:
+          dest: '/etc/wireguard/wgz.conf'
+          content: |
+            [Interface]
+            Address = {{ wg_address }}
+            PrivateKey = {{ wg_privkey }}
+            ListenPort = {{ wg_port }}
+        notify: restart_wg
+      - name: launch wg-quick
+        become: true
+        systemd:
+          name: wg-quick@wgz
+          enabled: true
+          state: started
+      - name: openvpn directory
+        file:
+          path: '{{ansible_user_dir}}/openvpn/data'
+          state: directory
+          recurse: true
+      - name: openvpn docker-compose.yml
+        copy:
+          content: '{{ openvpn_docker_compose | to_nice_yaml }}'
+          dest: '{{ansible_user_dir}}/openvpn/docker-compose.yml'
+      - name: init openvpn
+        shell: |
+          docker compose run --rm openvpn ovpn_genconfig -u udp://{{ansible_ssh_host}} -n {{dns}} -s {{openvpn_network}}
+          yes '' | docker compose run --rm openvpn ovpn_initpki nopass
+          docker compose run --rm openvpn easyrsa build-client-full {{ openvpn_client_name }} nopass
+          docker compose run --rm openvpn ovpn_getclient {{ openvpn_client_name }} > {{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn
+        args:
+          creates: '{{ansible_user_dir}}/openvpn/data/openvpn.conf'
+          chdir: '{{ansible_user_dir}}/openvpn'
+        register: openvpn_inited
+      - name: generate conf base64
+        shell: |
+          cat {{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn | base64 -w 0 > {{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn.base64
+        args:
+          creates: '{{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn.base64'
+      - name: docker-compose up -d
+        docker_compose:
+          project_src: '{{ansible_user_dir}}/openvpn'
+          state: present
+          remove_orphans: true
+      - name: collect openvpn file
+        fetch:
+          src: '{{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn.base64'
+          dest: '../collector/znode-ovpn/{{ansible_ssh_host}}.ovpn.base64'
+          flat: true
+        # when: openvpn_inited.changed
+    handlers:
+      - name: restart_wg
+        systemd:
+          name: wg-quick@wgz
+          state: restarted

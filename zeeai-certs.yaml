@@ -1,0 +1,24 @@
+---
+- hosts: zeeai-certs
+  remote_user: root
+  tasks:
+    - name: directories
+      ignore_errors: true
+      file:
+        path: '{{path}}'
+        state: directory
+        recurse: yes
+      with_items: '{{certs}}'
+    - name: certs
+      synchronize:
+        src: ../certs/{{item.domain}}/
+        dest: '{{path}}'
+        delete: yes
+        copy_links: yes
+        verify_host: no
+        recursive: yes
+        checksum: yes
+        archive: no
+      with_items: '{{certs}}'
+      when: not item.become is defined or not item.become
+      notify: handle
