@@ -1,7 +1,7 @@
 - name: install pip packages
   become: true
   pip:
-    name: 'ansible<3.11.0'
+    name: 'ansible<2.11.0'
     state: latest
 - name: set ansible module_utils path
   set_fact:
