@@ -4,3 +4,9 @@
     project_src: '{{handler.path}}'
     restarted: yes
     services: '{{handler.services}}'
+  when: handler.services[0] != 'all'
+- name: restart all docker services
+  docker_compose:
+    project_src: '{{handler.path}}'
+    restarted: yes
+  when: handler.services[0] == 'all'

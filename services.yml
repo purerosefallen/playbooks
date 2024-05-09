@@ -52,7 +52,7 @@
           group: '{{ ansible_user_id }}'
           follow: yes
         when: service_name == "frpc"
-        notify: handle_frpc
+        notify: handle
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ ansible_user_dir }}/{{ service_path }}'
@@ -67,12 +67,4 @@
             type: docker
             path: '{{ ansible_user_dir }}/{{ service_path }}'
             services: '{{ handle_services }}'
-        when: handle_services
-      - name: handle_frpc
-        include_tasks: 'handlers/docker.yaml'
-        vars:
-          handler: 
-            type: docker
-            path: '{{ ansible_user_dir }}/{{ service_path }}'
-            services: '{{ frpc_instances | map(attribute="name") }}'
-        when: service_name == "frpc"
+        when: handle_services and handle_services | length > 0
