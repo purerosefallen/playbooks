@@ -8,7 +8,7 @@
   when: ygopro_branch is not defined
 - name: ygopro
   git:
-    repo: 'https://code.mycard.moe/{{ygopro_fork}}/ygopro'
+    repo: 'https://code.moenext.com/{{ygopro_fork}}/ygopro'
     dest: '{{ygopro_path}}'
     version: '{{ygopro_branch}}'
     force: true

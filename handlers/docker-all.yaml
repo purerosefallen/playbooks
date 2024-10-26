@@ -3,3 +3,10 @@
   docker_compose:
     project_src: '{{handler.path}}'
     restarted: yes
+  when: not (v2_format is defined and v2_format)
+- name: restart all docker services v2
+  shell: |
+    docker compose restart
+  args:
+    chdir: '{{handler.path}}'
+  when: v2_format is defined and v2_format

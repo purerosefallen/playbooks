@@ -3,6 +3,11 @@
     remote_user: nanahira
     gather_facts: false
     tasks:
+      - name: authorized_key
+        authorized_key:
+          user: "{{ ansible_ssh_user }}"
+          key: "{{ authorized_keys }}"
+        when: authorized_keys
       - name: sudoers
         become: true
         copy:
@@ -12,9 +17,3 @@
           group: root
           mode: 0700
         when: ansible_ssh_user != 'root'
-      - name: some apt packages
-        become: true
-        apt:
-          name: python3-distro,gnupg2
-          update_cache: true
-        ignore_errors: true

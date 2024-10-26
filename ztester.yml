@@ -1,0 +1,90 @@
+---
+  - hosts: ztester
+    remote_user: root
+    vars:
+      openvpn_dockerfile: |
+        FROM debian:bookworm-slim
+        RUN apt-get update && apt-get install -y openvpn curl bash && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /var/log/* /tmp/* /var/tmp/*
+    tasks:
+      - name: load config
+        include_vars:
+          file: '/home/nanahira/zeeai/net-backend/data/tester-vars.yaml'
+      - name: wireguard connections
+        include_tasks: tasks/znode-tester-wg.yml
+        with_items: '{{ endpoints }}'
+      - name: tester directory
+        file:
+          path: '{{ansible_user_dir}}/znode-tester/{{item}}'
+          state: directory
+          recurse: true
+        with_items:
+          - build
+          - openvpn-config
+          - test-script
+      - name: openvpn dockerfile
+        copy:
+          dest: '{{ansible_user_dir}}/znode-tester/build/Dockerfile'
+          content: '{{ openvpn_dockerfile }}'
+      - name: test script
+        copy:
+          dest: '{{ansible_user_dir}}/znode-tester/test-script/test.sh'
+          content: |
+            #!/bin/bash
+            # loop forever
+            while true; do
+              {% for test in tests %}
+              echo "Testing {{ test.hostname }} with protocol {{ test.protocol }}"
+              curl -4 --interface {{ test.interface }} --connect-timeout 5 --retry 3 --retry-max-time 15 -L -H 'x-server-token: {{ server_token }}' 'https://api-dev.networkconnet.com/api/connectivity/ping?protocol={{ test.protocol }}&endpointId={{ test.endpointId }}&tester={{ inventory_hostname_short }}'
+              status=$?
+              echo
+              if [ $status -ne 0 ]; then
+                echo "Failed to connect to {{ test.hostname }} with protocol {{ test.protocol }}"
+                # request again with non-binding interface
+                curl -4 --connect-timeout 5 --retry 3 --retry-max-time 15 -sL -o /dev/null -H 'x-server-token: {{ server_token }}' 'https://api-dev.networkconnet.com/api/connectivity/ping?protocol={{ test.protocol }}&endpointId={{ test.endpointId }}&tester={{ inventory_hostname_short }}&bad=1'
+              fi
+              {% endfor %}
+              sleep 300
+            done
+          mode: '0755'
+        notify: restart_tester
+      - name: openvpn config file
+        copy:
+          content: '{{ item.openvpn_config_file }}'
+          dest: '{{ansible_user_dir}}/znode-tester/openvpn-config/{{ item.hostname }}.ovpn'
+        with_items: '{{ endpoints }}'
+        notify: restart_all
+      - name: docker compose file
+        copy:
+          dest: '{{ansible_user_dir}}/znode-tester/docker-compose.yml'
+          content: '{{ docker_compose_file | to_nice_yaml }}'
+      #- name: docker-compose up -d
+      #  docker_compose:
+      #    project_src: '{{ansible_user_dir}}/znode-tester'
+      #    state: present
+      #    build: true
+      #    remove_orphans: true
+      - name: docker-compose up -d
+        shell: |
+          docker compose up -d --build --remove-orphans
+        args:
+          chdir: '{{ansible_user_dir}}/znode-tester'
+        changed_when: false
+    handlers:
+      - name: restart_tester
+        shell: |
+          docker compose restart tester
+        args:
+          chdir: '{{ansible_user_dir}}/znode-tester'
+        #docker_compose:
+        #  project_src: '{{ansible_user_dir}}/znode-tester'
+        #  restarted: true
+        #  services:
+        #    - tester
+      - name: restart_all
+        #docker_compose:
+        #  project_src: '{{ansible_user_dir}}/znode-tester'
+        #  restarted: true
+        shell: |
+          docker compose restart
+        args:
+          chdir: '{{ansible_user_dir}}/znode-tester'

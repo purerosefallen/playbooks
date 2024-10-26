@@ -8,7 +8,7 @@
   when: windbot_branch is not defined
 - name: windbot
   git:
-    repo: 'https://code.mycard.moe/{{windbot_fork}}/windbot'
+    repo: 'https://code.moenext.com/{{windbot_fork}}/windbot'
     dest: '{{home_path}}/windbot'
     version: '{{windbot_branch}}'
     force: true

@@ -4,9 +4,21 @@
     project_src: '{{handler.path}}'
     restarted: yes
     services: '{{handler.services}}'
-  when: handler.services[0] != 'all'
+  when: handler.services[0] != 'all' and not (v2_format is defined and v2_format)
 - name: restart all docker services
   docker_compose:
     project_src: '{{handler.path}}'
     restarted: yes
-  when: handler.services[0] == 'all'
+  when: handler.services[0] == 'all' and not (v2_format is defined and v2_format)
+- name: restart docker services v2
+  shell: |
+    docker compose restart {{handler.services | join(' ')}}
+  args:
+    chdir: '{{handler.path}}'
+  when: handler.services[0] != 'all' and v2_format is defined and v2_format
+- name: restart all docker services v2
+  shell: |
+    docker compose restart
+  args:
+    chdir: '{{handler.path}}'
+  when: handler.services[0] == 'all' and v2_format is defined and v2_format

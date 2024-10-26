@@ -1,0 +1,74 @@
+---
+  - hosts: znodes
+    remote_user: root
+    tasks:
+      - name: directory
+        file:
+          path: '{{ansible_user_dir}}/{{item}}'
+          state: directory
+        with_items:
+          - certbot
+          - certs
+      - name: set docker-compose var
+        set_fact:
+          #certbot_entrypoint: |
+          #  #!/bin/sh
+          #  certbot "$@"
+          #  # run every 24 hours
+          #  while true; do
+          #    sleep 86400
+          #    certbot "$@"
+          #  done
+          certbot_docker_compose:
+            version: '2.4'
+            services:
+              certbot:
+                image: certbot/certbot
+                ports:
+                  - '80:80'
+                command: certonly --agree-tos --manual-public-ip-logging-ok --non-interactive -m ssl-{{inventory_hostname_short}}@mypaperai.com --preferred-challenges http-01 --standalone --key-type rsa --cert-name {{ansible_ssh_host}}
+                    --server {{acme_server}} --eab-kid {{acme_kid}} --eab-hmac-key {{acme_key}}
+                    -d {{ansible_ssh_host}}
+                volumes:
+                  - ./certbot:/etc/letsencrypt
+                  # - ./entrypoint.sh:/entrypoint.sh
+      - name: docker-compose.yml
+        copy:
+          content: '{{ certbot_docker_compose | to_nice_yaml }}'
+          dest: '{{ansible_user_dir}}/certbot/docker-compose.yml'
+      #- name: entrypoint.sh
+      #  copy:
+      #    content: '{{ certbot_entrypoint }}'
+      #   dest: '{{ansible_user_dir}}/certbot/entrypoint.sh'
+      #    # set permissions
+      #    mode: '0755'
+      - name: docker-compose up
+        shell: docker compose up
+        args:
+          chdir: '{{ansible_user_dir}}/certbot'
+        changed_when: false
+      #- name: wait for certificate generated
+      #  wait_for:
+      #    path: '{{ansible_user_dir}}/certbot/certbot/live/{{ansible_ssh_host}}/fullchain.pem'
+      #    state: present
+      #    timeout: 300
+      - name: copy certificate
+        copy:
+          src: '{{ansible_user_dir}}/certbot/certbot/live/{{ansible_ssh_host}}/{{item}}'
+          dest: '{{ansible_user_dir}}/certs/{{item}}'
+          follow: true
+          remote_src: true
+        with_items:
+          - fullchain.pem
+          - privkey.pem
+          - cert.pem
+          - chain.pem
+        notify: restart_ikev2
+    handlers:
+      - name: restart_ikev2
+        docker_compose:
+          project_src: '{{ansible_user_dir}}/zeeai-ikev2'
+          restarted: true
+          services:
+            - strongswan
+        failed_when: false

@@ -14,6 +14,9 @@
             network_mode: host
             volumes:
               - ./data:/etc/openvpn
+            command:
+              - ovpn_run
+              - --duplicate-cn
       openvpn_client_name: orange
     tasks:
       - name: public key
@@ -35,6 +38,14 @@
             Address = {{ wg_address }}
             PrivateKey = {{ wg_privkey }}
             ListenPort = {{ wg_port }}
+
+            {% if wg_tests is defined and wg_tests %}
+            {% for wg_test in wg_tests %}
+            [Peer]
+            PublicKey = {{ wg_test.pubkey }}
+            AllowedIPs = {{ wg_test.ip }}/32
+            {% endfor %}
+            {% endif %}
         notify: restart_wg
       - name: launch wg-quick
         become: true
@@ -67,10 +78,15 @@
         args:
           creates: '{{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn.base64'
       - name: docker-compose up -d
-        docker_compose:
-          project_src: '{{ansible_user_dir}}/openvpn'
-          state: present
-          remove_orphans: true
+        #docker_compose:
+        #  project_src: '{{ansible_user_dir}}/openvpn'
+        #  state: present
+        #  remove_orphans: true
+        shell: |
+          docker compose up -d --remove-orphans
+        args:
+          chdir: '{{ansible_user_dir}}/openvpn'
+        changed_when: false
       - name: collect openvpn file
         fetch:
           src: '{{ansible_user_dir}}/openvpn/{{ openvpn_client_name }}.ovpn.base64'

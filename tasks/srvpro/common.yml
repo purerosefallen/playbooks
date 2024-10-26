@@ -18,7 +18,7 @@
   when: srvpro_branch is not defined
 - name: srvpro
   git:
-    repo: 'https://code.mycard.moe/{{srvpro_fork}}/srvpro'
+    repo: 'https://code.moenext.com/{{srvpro_fork}}/srvpro'
     dest: '{{home_path}}/ygopro-server'
     version: '{{srvpro_branch}}'
     force: true

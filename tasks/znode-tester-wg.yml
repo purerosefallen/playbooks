@@ -1,0 +1,28 @@
+- name: '{{ item.hostname }}: wg config file'
+  become: true
+  copy:
+    dest: '/etc/wireguard/{{ item.wg_tunname }}.conf'
+    content: |
+      [Interface]
+      Address = {{ wg_testip }}
+      PrivateKey = {{ wg_privkey }}
+      Table = off
+
+      [Peer]
+      PublicKey = {{ item.wg_pubkey }}
+      AllowedIPs = 0.0.0.0/0
+      Endpoint = {{ item.hostname }}:44000
+      PersistentKeepalive = 1
+  register: wg_conf
+- name: '{{ item.hostname }}: launch wg-quick'
+  become: true
+  systemd:
+    name: wg-quick@{{ item.wg_tunname }}
+    enabled: true
+    state: started
+- name: '{{ item.hostname }}: restart wg'
+  become: true
+  systemd:
+    name: wg-quick@{{ item.wg_tunname }}
+    state: restarted
+  when: wg_conf.changed
