@@ -26,7 +26,7 @@
       - name: register
         shell: |
           {% for instance in instances %}
-          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --token '{{ instance.token }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:20-git {% else %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %}
+          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --token '{{ instance.token }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:28-git {% else %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %}
 
           {% endfor %}
         args:

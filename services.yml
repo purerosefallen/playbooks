@@ -4,9 +4,13 @@
     tasks:
       - name: directory
         file:
-          path: '{{ ansible_user_dir }}/{{ service_path }}'
+          path: '{{ ansible_user_dir }}/{{ service_path }}/{{ item }}'
           state: directory
           recurse: true
+        with_items:
+          - data
+          - templates
+          - collects
       - name: docker-compose file
         template:
           src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
@@ -23,15 +27,12 @@
           checksum: yes
           archive: no
           perms: yes
+          rsync_opts: '{{ upload_rsync_opts | default([]) }}'
         notify: handle
       - name: specific files
         copy: '{{item}}'
         with_items: '{{ specific_files }}'
         notify: handle
-      - name: templates directory
-        file:
-          path: '{{ ansible_user_dir }}/{{ service_path }}/templates'
-          state: directory
       - name: templates
         become: true
         with_items: '{{ template_list }}'

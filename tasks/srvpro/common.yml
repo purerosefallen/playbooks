@@ -1,10 +1,3 @@
-- name: pre data
-  git:
-    repo: 'https://e.coding.net/mercury233/ygopro-pre-data.git'
-    dest: '{{home_path}}/ygopro-pre-data'
-    force: true
-    accept_hostkey: true
-    track_submodules: true
 - name: windbot
   include_tasks: ./windbot.yml
   when: server_type is not defined or server_type != "tournament"

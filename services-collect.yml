@@ -1,0 +1,17 @@
+---
+  - hosts: services
+    remote_user: root
+    tasks:
+      - name: Synchronize collects directory files to local
+        synchronize:
+          src: "{{ ansible_user_dir }}/{{ service_path }}/collects/"
+          dest: "../collector/{{ service_name }}/{{ inventory_hostname_short }}/"
+          mode: pull
+          delete: no
+          copy_links: yes
+          recursive: yes
+          verify_host: no
+          checksum: yes
+          archive: no
+          perms: yes
+          rsync_opts: '{{ collect_rsync_opts | default([]) }}'
