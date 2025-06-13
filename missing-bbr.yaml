@@ -1,0 +1,6 @@
+---
+- hosts: init
+  remote_user: root
+  tasks:
+    - name: rerun sysctl
+      include_tasks: roles/init/tasks/sysctl.yml

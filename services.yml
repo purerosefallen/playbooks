@@ -33,16 +33,20 @@
         copy: '{{item}}'
         with_items: '{{ specific_files }}'
         notify: handle
+      - name: Get list of full path template files (*.j2) for the service
+        set_fact:
+          template_list: "{{ lookup('fileglob', 'files/services/' + service_name + '/templates/*.j2', wantlist=True) }}"
       - name: templates
         become: true
         with_items: '{{ template_list }}'
         template:
-          src: 'files/services/{{ service_name }}/templates/{{ item }}.j2'
-          dest: '{{ ansible_user_dir }}/{{ service_path }}/templates/{{ item }}'
+          src: '{{ item }}'
+          dest: "{{ ansible_user_dir }}/{{ service_path }}/templates/{{ item | basename | regex_replace('\\.j2$', '') }}"
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
           follow: yes
         notify: handle
+        when: service_name != "frpc"
       - name: templates for frpc
         become: true
         with_items: '{{ frpc_instances }}'

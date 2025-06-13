@@ -16,19 +16,19 @@
     track_submodules: true
 - name: premake5
   unarchive:
-    src: https://cdn01.moecube.com/ygopro-build-materials/premake-5.0.0-beta1-linux.tar.gz
+    src: https://cdn01.moecube.com/ygopro-build-materials/premake-5.0.0-beta4-linux.tar.gz
     dest: '{{ygopro_path}}/'
     creates: '{{ygopro_path}}/premake5'
     remote_src: true
 - name: download lua
   unarchive:
-    src: https://cdn02.moecube.com:444/ygopro-build-materials/lua-5.3.6.tar.gz
+    src: https://cdn02.moecube.com:444/ygopro-build-materials/lua-5.4.4.tar.gz
     dest: /tmp/
-    creates: /tmp/lua-5.3.6
+    creates: /tmp/lua-5.4.4
     remote_src: true
   when: ansible_os_family != 'Debian'
 - name: move lua 
-  shell: 'cp -rf /tmp/lua-5.3.6 {{ygopro_path}}/lua ; cp -rf {{ygopro_path}}/premake/lua/premake5.lua {{ygopro_path}}/lua/'
+  shell: 'cp -rf /tmp/lua-5.4.4 {{ygopro_path}}/lua ; cp -rf {{ygopro_path}}/premake/lua/premake5.lua {{ygopro_path}}/lua/'
   args:
     creates: '{{ygopro_path}}/lua/premake5.lua'
   when: ansible_os_family != 'Debian'
@@ -40,6 +40,14 @@
   set_fact:
     premake_params: '{{premake_params}} --lua-deb'
   when: ansible_os_family == 'Debian'
+- name: remove old build dirs
+  file:
+    name: '{{ygopro_path}}/{{item}}'
+    state: absent
+  with_items:
+    - bin
+    - obj
+    - build
 - name: premake5 gmake
   shell: './premake5 gmake {{premake_params}}'
   args:

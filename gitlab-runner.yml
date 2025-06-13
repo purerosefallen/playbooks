@@ -20,10 +20,24 @@
           remove_orphans: true
           build: false
           pull: '{{pull}}'
+      - name: check avx2
+        command: lscpu | grep avx2
+        register: avx2_check
+        failed_when: false
+        changed_when: false
+        when: ansible_architecture == 'x86_64'
+      - name: use avx2
+        set_fact:
+          avx2_tag: 'avx2'
+        when: ansible_architecture == 'x86_64' and avx2_check.stdout != ''
+      - name: use no avx2
+        set_fact:
+          avx2_tag: 'noavx2'
+        when: ansible_architecture == 'x86_64' and avx2_check.stdout == ''
       - name: register
         shell: |
           {% for instance in instances %}
-          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --registration-token '{{ instance.token }}' --description '{{ instance.desc }} runner on {{ inventory_hostname }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --tag-list docker{% if ansible_architecture == 'aarch64' %}-arm{% endif %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:{{ docker_version | default(25) }}-git {% else %} --tag-list {% if ansible_architecture == 'aarch64' %}arm{% else %}linux{% endif %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %}
+          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --registration-token '{{ instance.token }}' --description '{{ instance.desc }} runner on {{ inventory_hostname }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --tag-list docker{% if ansible_architecture == 'aarch64' %}-arm{% else %},docker-{{avx2_tag}}{% endif %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:{{ docker_version | default(25) }}-git {% else %} --tag-list {% if ansible_architecture == 'aarch64' %}arm{% else %}linux,{{avx2_tag}}{% endif %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %}
 
           {% endfor %}
         args:
