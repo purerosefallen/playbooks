@@ -1,25 +1,27 @@
 ---
 - hosts: init
   tasks:
-    - name: 检查 docker pip 包的版本
-      command: pip show docker
-      register: docker_version
-      changed_when: false
-      failed_when: docker_version.rc != 0
-
-    - name: 提取 docker 版本号
-      set_fact:
-        installed_docker_version: "{{ docker_version.stdout | regex_search('Version: ([0-9.]+)', '\\1') | first }}"
-      when: docker_version.rc == 0
-
-    - name: 检查 docker 版本是否为 6.1.3
-      debug:
-        msg: "Docker pip 包版本为 {{installed_docker_version}}"
-
-    - name: 替换 compose/service.py 文件
+    - name: install latest docker
+      become: true
+      apt:
+        name: docker-ce,docker-ce-cli,docker-compose-plugin
+        state: latest
+        update_cache: yes
+      notify: restart_docker
+    - name: docker-compose
+      become: true
+      pip:
+        name: docker-compose,docker==6.1.3,requests==2.31.0
+        extra_args: '--no-build-isolation --ignore-installed'
+    - name: replace compose/service.py 
       become: true
       copy:
         src: ./files/docker-service-patch.py
         dest: "/usr/local/lib/python{{ ansible_python.version.major }}.{{ ansible_python.version.minor }}/dist-packages/compose/service.py"
         backup: yes
-      when: installed_docker_version == '6.1.3'
+  handlers:
+    - name: restart_docker
+      become: true
+      systemd:
+        name: docker
+        state: restarted

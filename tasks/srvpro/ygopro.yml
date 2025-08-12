@@ -16,7 +16,7 @@
     track_submodules: true
 - name: premake5
   unarchive:
-    src: https://cdn01.moecube.com/ygopro-build-materials/premake-5.0.0-beta4-linux.tar.gz
+    src: https://cdn02.moecube.com:444/premake5-built/premake-5.0.0-beta7-linux.tar.gz
     dest: '{{ygopro_path}}/'
     creates: '{{ygopro_path}}/premake5'
     remote_src: true

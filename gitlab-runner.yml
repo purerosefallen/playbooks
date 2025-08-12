@@ -37,7 +37,7 @@
       - name: register
         shell: |
           {% for instance in instances %}
-          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --registration-token '{{ instance.token }}' --description '{{ instance.desc }} runner on {{ inventory_hostname }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --tag-list docker{% if ansible_architecture == 'aarch64' %}-arm{% else %},docker-{{avx2_tag}}{% endif %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:{{ docker_version | default(25) }}-git {% else %} --tag-list {% if ansible_architecture == 'aarch64' %}arm{% else %}linux,{{avx2_tag}}{% endif %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %}
+          docker-compose exec -T runner gitlab-runner register --non-interactive --url '{{ instance.url }}' --registration-token '{{ instance.token }}' --description '{{ instance.desc }} runner on {{ inventory_hostname }}' --executor '{{ instance.type | default("docker") }}' --docker-volumes /cache {% if instance.docker | default(false) %} --tag-list docker{% if ansible_architecture == 'aarch64' %}-arm{% else %},docker-{{avx2_tag}}{% endif %} --docker-privileged --docker-volumes /var/run/docker.sock:/var/run/docker.sock --docker-image docker:{{ docker_version | default(25) }}-git {% else %} --tag-list {% if ansible_architecture == 'aarch64' %}arm{% else %}linux,{{avx2_tag}}{% endif %} --docker-image git-registry.moenext.com/mycard/docker-runner-base:latest {% endif %} --output-limit 1024000
 
           {% endfor %}
         args:
