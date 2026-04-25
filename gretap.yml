@@ -1,0 +1,106 @@
+- hosts: gretap
+  remote_user: root
+
+  tasks:
+    - name: Ensure bridge-utils is installed
+      become: true
+      apt:
+        name: bridge-utils
+        state: present
+    - name: Load br_netfilter (runtime)
+      command: modprobe br_netfilter
+      args:
+        warn: false
+      register: _modprobe_brnf
+      changed_when: _modprobe_brnf.rc == 0
+      failed_when: false
+    - name: Persist br_netfilter at boot
+      become: true
+      copy:
+        dest: /etc/modules-load.d/br_netfilter.conf
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          br_netfilter
+
+    - name: Install /etc/network/interfaces.d/gretap-all.cfg (inline rendered)
+      copy:
+        dest: /etc/network/interfaces.d/gretap
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          {% for inst in instances %}
+          # === gretap stack: {{ inst.name }} ===
+
+          # 接入端口（可多个）
+          {% for ifn in inst.interfaces %}
+          auto {{ ifn }}
+          iface {{ ifn }} inet manual
+              mtu {{ inst.mtu | default(1476) }}
+              up ip link set {{ ifn }} up
+
+          {% endfor %}
+
+          # 多个 gretap 通道
+          {% for t in inst.tunnels %}
+          auto gretap-{{ inst.name }}-{{ loop.index0 }}
+          iface gretap-{{ inst.name }}-{{ loop.index0 }} inet manual
+              mtu {{ inst.mtu | default(1476) }}
+              pre-up ip link add gretap-{{ inst.name }}-{{ loop.index0 }} type gretap local {{ t.local_ip | default(ansible_ssh_host) }} remote {{ t.remote_ip }} ttl 255
+              up ip link set gretap-{{ inst.name }}-{{ loop.index0 }} up
+              post-down ip link del gretap-{{ inst.name }}-{{ loop.index0 }}
+
+          {% endfor %}
+
+          # 纯二层桥（无 IP）
+          auto br-{{ inst.name }}
+          iface br-{{ inst.name }} inet manual
+              bridge_ports {% for ifn in inst.interfaces %}{{ ifn }} {% endfor %}{% for t in inst.tunnels %}gretap-{{ inst.name }}-{{ loop.index0 }} {% endfor %}
+              bridge_stp on
+              bridge_fd 1
+              mtu {{ inst.mtu | default(1476) }}
+              up ip link set br-{{ inst.name }} up
+              post-up iptables -t mangle -A FORWARD -i br-{{ inst.name }} -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss {{ (inst.mtu | default(1476)) - 40 }}:1460 -j TCPMSS --set-mss {{ (inst.mtu | default(1476)) - 40 }}
+              post-up iptables -t mangle -A FORWARD -o br-{{ inst.name }} -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss {{ (inst.mtu | default(1476)) - 40 }}:1460 -j TCPMSS --set-mss {{ (inst.mtu | default(1476)) - 40 }}
+              pre-down iptables-save | sed '/-A FORWARD -[io] br-{{ inst.name }} -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss/d' | iptables-restore
+
+          {% endfor %}
+      notify: bounce gretap
+
+  handlers:
+    - name: bounce gretap
+      become: yes
+      shell: |
+        set -e
+
+        echo "== Bringing down bridges =="
+        {% for inst in instances %}
+        ifdown br-{{ inst.name }} || true
+        {% endfor %}
+
+        echo "== Bringing down member links =="
+        {% for inst in instances %}
+        {% for ifn in inst.interfaces %}
+        ifdown {{ ifn }} || true
+        {% endfor %}
+        {% for t in inst.tunnels %}
+        ifdown gretap-{{ inst.name }}-{{ loop.index0 }} || true
+        {% endfor %}
+        {% endfor %}
+
+        echo "== Bringing up member links =="
+        {% for inst in instances %}
+        {% for ifn in inst.interfaces %}
+        ifup {{ ifn }} || true
+        {% endfor %}
+        {% for t in inst.tunnels %}
+        ifup gretap-{{ inst.name }}-{{ loop.index0 }} || true
+        {% endfor %}
+        {% endfor %}
+
+        echo "== Bringing up bridges =="
+        {% for inst in instances %}
+        ifup br-{{ inst.name }} || true
+        {% endfor %}
