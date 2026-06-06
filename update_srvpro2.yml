@@ -1,0 +1,7 @@
+---
+- hosts: srvpro2
+  tasks:
+    - name: refresh srvpro2
+      shell: ./refresh-srvpro2.sh
+      args:
+        chdir: "{{ srvpro2_path }}"

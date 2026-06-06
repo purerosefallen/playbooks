@@ -16,19 +16,19 @@
     track_submodules: true
 - name: premake5
   unarchive:
-    src: https://cdn02.moecube.com:444/premake5-built/premake-5.0.0-beta7-linux.tar.gz
+    src: https://cdn02.moecube.com:444/premake5-built/premake-5.0.0-beta8-linux.tar.gz
     dest: '{{ygopro_path}}/'
     creates: '{{ygopro_path}}/premake5'
     remote_src: true
 - name: download lua
   unarchive:
-    src: https://cdn02.moecube.com:444/ygopro-build-materials/lua-5.4.4.tar.gz
+    src: https://mat-cacher.moenext.com/https://www.lua.org/ftp/lua-5.4.8.tar.gz
     dest: /tmp/
-    creates: /tmp/lua-5.4.4
+    creates: /tmp/lua-5.4.8
     remote_src: true
   when: ansible_os_family != 'Debian'
 - name: move lua 
-  shell: 'cp -rf /tmp/lua-5.4.4 {{ygopro_path}}/lua ; cp -rf {{ygopro_path}}/premake/lua/premake5.lua {{ygopro_path}}/lua/'
+  shell: 'cp -rf /tmp/lua-5.4.8 {{ygopro_path}}/lua ; cp -rf {{ygopro_path}}/premake/lua/premake5.lua {{ygopro_path}}/lua/'
   args:
     creates: '{{ygopro_path}}/lua/premake5.lua'
   when: ansible_os_family != 'Debian'

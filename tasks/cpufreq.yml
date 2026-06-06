@@ -12,3 +12,4 @@
     unsafe_writes: true
   with_items: '{{freq_list.files}}'
   when: cpufreq_policy != 'none'
+  ignore_errors: true
