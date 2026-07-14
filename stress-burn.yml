@@ -1,0 +1,44 @@
+---
+- hosts: "{{ target | default('z-amd-2,z-amd-3') }}"
+  gather_facts: true
+  vars:
+    stress_burn_path: "{{ ansible_user_dir }}/20260605-stress"
+  tasks:
+    - name: stress directory
+      file:
+        path: "{{ stress_burn_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: stress files
+      copy:
+        src: ../20260605-stress/
+        dest: "{{ stress_burn_path }}/"
+        mode: preserve
+
+    - name: load stress image
+      become: true
+      command:
+        cmd: docker load -i stress-burn-20260605.tar
+        chdir: "{{ stress_burn_path }}"
+      register: stress_image_load
+      changed_when: "'Loaded image:' in stress_image_load.stdout or 'Loaded image ID:' in stress_image_load.stdout"
+
+    - name: compose up
+      become: true
+      command:
+        cmd: docker compose up -d --remove-orphans
+        chdir: "{{ stress_burn_path }}"
+      register: stress_compose_up
+      changed_when: "'Started' in stress_compose_up.stderr or 'Created' in stress_compose_up.stderr or 'Recreated' in stress_compose_up.stderr or 'Running' in stress_compose_up.stderr"
+
+    - name: stress container status
+      become: true
+      command:
+        cmd: docker ps --filter name=stress-burn --format {{ '"{{.Names}} {{.Status}} {{.Image}}"' }}
+      register: stress_container_status
+      changed_when: false
+
+    - name: show stress container status
+      debug:
+        var: stress_container_status.stdout_lines
