@@ -1,5 +1,5 @@
 ---
-  - hosts: services
+  - hosts: '{{ services_target_hosts | default("services") }}'
     remote_user: root
     tasks:
       - name: directory

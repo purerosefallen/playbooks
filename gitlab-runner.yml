@@ -1,25 +1,16 @@
 ---
+  - import_playbook: services.yml
+    vars:
+      services_target_hosts: gitlab-runner
+      service_path: gitlab-runner
+      service_name: gitlab-runner
+
   - hosts: gitlab-runner
     remote_user: root
     vars:
       service_path: gitlab-runner
       service_name: gitlab-runner
     tasks:
-      - name: directory
-        file:
-          path: '{{ ansible_user_dir }}/{{ service_path }}'
-          state: directory
-          recurse: true
-      - name: docker-compose file
-        template:
-          src: 'files/services/{{ service_name }}/docker-compose.yml.j2'
-          dest: '{{ ansible_user_dir }}/{{ service_path }}/docker-compose.yml'
-      - name: docker-compose up -d
-        docker_compose:
-          project_src: '{{ ansible_user_dir }}/{{ service_path }}'
-          remove_orphans: true
-          build: false
-          pull: '{{pull}}'
       - name: check avx2
         command: lscpu | grep avx2
         register: avx2_check
@@ -54,6 +45,168 @@
           backrefs: true
         notify: restart_runner
         when: ansible_processor_vcpus|int > 1
+      - name: configure artifact upload timeouts for every runner
+        become: true
+        shell: |
+          python3 - '{{ ansible_user_dir }}/{{ service_path }}/config/config.toml' <<'PY'
+          import os
+          import re
+          import sys
+          import tempfile
+          from pathlib import Path
+
+          config_path = Path(sys.argv[1])
+          original_bytes = config_path.read_bytes()
+          original = original_bytes.decode("utf-8")
+          newline = "\r\n" if "\r\n" in original else "\n"
+
+          runner_header = re.compile(r"^[ \t]*\[\[runners\]\][ \t]*(?:#.*)?(?:\r?\n|$)", re.MULTILINE)
+          table_header = re.compile(r"^[ \t]*\[{1,2}[^\]\r\n]+\]{1,2}[ \t]*(?:#.*)?(?:\r?\n|$)")
+          artifact_header = re.compile(r"^[ \t]*\[runners\.artifact\][ \t]*(?:#.*)?(?:\r?\n|$)")
+
+          def update_value(line, key):
+              line_ending = ""
+              if line.endswith("\r\n"):
+                  line_ending = "\r\n"
+                  body = line[:-2]
+              elif line.endswith("\n"):
+                  line_ending = "\n"
+                  body = line[:-1]
+              else:
+                  body = line
+
+              prefix_match = re.match(rf"^([ \t]*{re.escape(key)}[ \t]*=[ \t]*)", body)
+              if not prefix_match:
+                  return line
+              remainder = body[prefix_match.end():]
+              comment_match = re.search(r"([ \t]+#.*)$", remainder)
+              tail = comment_match.group(1) if comment_match else ""
+              return f'{prefix_match.group(1)}"2h"{tail}{line_ending}'
+
+          def patch_runner(stanza):
+              lines = stanza.splitlines(keepends=True)
+              artifact_indexes = [index for index, line in enumerate(lines) if artifact_header.match(line)]
+              if len(artifact_indexes) > 1:
+                  raise RuntimeError("runner stanza contains multiple [runners.artifact] sections")
+
+              if artifact_indexes:
+                  artifact_index = artifact_indexes[0]
+                  section_end = len(lines)
+                  for index in range(artifact_index + 1, len(lines)):
+                      if table_header.match(lines[index]):
+                          section_end = index
+                          break
+
+                  section_keys = {
+                      match.group(1)
+                      for line in lines[artifact_index + 1:section_end]
+                      if (match := re.match(r"^[ \t]*([A-Za-z0-9_.-]+)[ \t]*=", line))
+                  }
+                  if {"url", "token", "executor"}.issubset(section_keys):
+                      target_indexes = [
+                          index
+                          for index in range(artifact_index + 1, section_end)
+                          if re.match(r"^[ \t]*(?:upload_timeout|response_header_timeout)[ \t]*=", lines[index])
+                      ]
+                      if target_indexes:
+                          artifact_block_end = max(target_indexes) + 1
+                          artifact_block = lines[artifact_index:artifact_block_end]
+                          del lines[artifact_index:artifact_block_end]
+                          first_subtable = next(
+                              (index for index, line in enumerate(lines[1:], start=1) if table_header.match(line)),
+                              len(lines),
+                          )
+                          lines[first_subtable:first_subtable] = artifact_block
+                          return patch_runner("".join(lines))
+
+                  key_indexes = {}
+                  for key in ("upload_timeout", "response_header_timeout"):
+                      matches = [
+                          index
+                          for index in range(artifact_index + 1, section_end)
+                          if re.match(rf"^[ \t]*{re.escape(key)}[ \t]*=", lines[index])
+                      ]
+                      if len(matches) > 1:
+                          raise RuntimeError(f"runner artifact section contains duplicate {key}")
+                      if matches:
+                          key_indexes[key] = matches[0]
+                          lines[matches[0]] = update_value(lines[matches[0]], key)
+
+                  if "upload_timeout" not in key_indexes and "response_header_timeout" not in key_indexes:
+                      lines[artifact_index + 1:artifact_index + 1] = [
+                          f'    upload_timeout = "2h"{newline}',
+                          f'    response_header_timeout = "2h"{newline}',
+                      ]
+                  elif "upload_timeout" not in key_indexes:
+                      lines[artifact_index + 1:artifact_index + 1] = [f'    upload_timeout = "2h"{newline}']
+                  elif "response_header_timeout" not in key_indexes:
+                      lines[key_indexes["upload_timeout"] + 1:key_indexes["upload_timeout"] + 1] = [
+                          f'    response_header_timeout = "2h"{newline}'
+                      ]
+                  return "".join(lines)
+
+              first_subtable = next(
+                  (index for index, line in enumerate(lines[1:], start=1) if table_header.match(line)),
+                  len(lines),
+              )
+              output_indexes = [
+                  index
+                  for index in range(1, first_subtable)
+                  if re.match(r"^[ \t]*output_limit[ \t]*=", lines[index])
+              ]
+              if len(output_indexes) > 1:
+                  raise RuntimeError("runner stanza contains duplicate output_limit values")
+              insert_at = first_subtable
+              if insert_at and not lines[insert_at - 1].endswith(("\n", "\r\n")):
+                  lines[insert_at - 1] += newline
+              lines[insert_at:insert_at] = [
+                  f'  [runners.artifact]{newline}',
+                  f'    upload_timeout = "2h"{newline}',
+                  f'    response_header_timeout = "2h"{newline}',
+              ]
+              return "".join(lines)
+
+          runner_matches = list(runner_header.finditer(original))
+          if not runner_matches:
+              raise RuntimeError("config.toml contains no [[runners]] entries")
+
+          output = [original[:runner_matches[0].start()]]
+          for index, match in enumerate(runner_matches):
+              stanza_end = runner_matches[index + 1].start() if index + 1 < len(runner_matches) else len(original)
+              output.append(patch_runner(original[match.start():stanza_end]))
+          updated = "".join(output)
+
+          if updated == original:
+              print("unchanged")
+              raise SystemExit(0)
+
+          file_stat = config_path.stat()
+          descriptor, temporary_name = tempfile.mkstemp(prefix=f".{config_path.name}.", dir=config_path.parent)
+          try:
+              os.fchmod(descriptor, file_stat.st_mode & 0o7777)
+              os.fchown(descriptor, file_stat.st_uid, file_stat.st_gid)
+              with os.fdopen(descriptor, "wb") as temporary_file:
+                  descriptor = -1
+                  temporary_file.write(updated.encode("utf-8"))
+                  temporary_file.flush()
+                  os.fsync(temporary_file.fileno())
+              os.replace(temporary_name, config_path)
+              directory_descriptor = os.open(config_path.parent, os.O_RDONLY)
+              try:
+                  os.fsync(directory_descriptor)
+              finally:
+                  os.close(directory_descriptor)
+          finally:
+              if descriptor >= 0:
+                  os.close(descriptor)
+              if os.path.exists(temporary_name):
+                  os.unlink(temporary_name)
+
+          print("changed")
+          PY
+        register: artifact_timeout_patch
+        changed_when: artifact_timeout_patch.stdout == 'changed'
+        when: instances is defined and instances
     handlers:
       - name: restart_runner
         include_tasks: 'handlers/docker.yaml'
