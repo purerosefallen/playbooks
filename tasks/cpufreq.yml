@@ -3,6 +3,8 @@
     paths:
       - /sys/devices/system/cpu/cpufreq/
     file_type: directory
+    patterns:
+      - 'policy[0-9]*'
   register: freq_list
 - name: cpufreq
   become: true
