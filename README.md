@@ -51,7 +51,7 @@ workspace_dir="${HOME}/ansible"
 mkdir -p "$workspace_dir"
 cd "$workspace_dir"
 
-git clone https://github.com/purerosefallen/playbooks.git playbooks
+git clone https://code.moenext.com/nanahira/playbooks.git playbooks
 ./playbooks/setup.sh
 
 git clone https://code.moenext.com/railgun/mitogen-0.3.7.git mitogen-0.3.7
