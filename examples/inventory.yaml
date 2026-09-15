@@ -1,0 +1,107 @@
+---
+# Ansible inventory 示例：仅展示初始化入口和服务部署所需的最小分组结构。
+#
+# 使用前请替换示例主机地址，并通过 Ansible Vault 或其他秘密管理方式
+# 提供密码、令牌等敏感值；不要把真实凭据直接写进此文件。
+
+init:
+  # 初始化所有主机时使用的默认变量；变量项与 inventory.yaml 保持一致。
+  vars:
+    ansible_ssh_user: root
+    install_docker: true
+    authorized_keys: |
+      ssh-ed25519 REPLACE_WITH_YOUR_PUBLIC_KEY user@example.com
+    china_mirror: false
+    china_mirror_docker: true
+    china_mirror_pip: true
+    china_mirror_omf: true
+    registry: https://registry.moecube.com
+    upgrade: true
+    reboot: true
+    pip_executable: pip
+    cpufreq_policy: performance
+    allow_password: false
+    vm_agents_status: present
+    ansible_python_interpreter: python3
+    xanmod: false
+    railgun:
+      destination: oversea
+      remoteGatewayId: 20001
+
+  # init 只聚合 services；具体服务组在下方定义。
+  children:
+    services:
+
+  # 文档网段 192.0.2.0/24 不会指向真实主机。
+  hosts:
+    init-example:
+      ansible_ssh_host: 192.0.2.10
+      # 按要求保留 inventory.yaml 中的 proxy_env 原文。
+      proxy_env:
+        HTTP_PROXY: http://10.198.0.42:3128
+        HTTPS_PROXY: http://10.198.0.42:3128
+        FTP_PROXY: http://10.198.0.42:3128
+        http_proxy: http://10.198.0.42:3128
+        https_proxy: http://10.198.0.42:3128
+        ftp_proxy: http://10.198.0.42:3128
+
+services:
+  # 所有服务共享的部署变量；变量项与 inventory.yaml 保持一致。
+  vars:
+    ansible_ssh_user: root
+    specific_files: []
+    build: false
+    pull: false
+    handle_services: null
+    ansible_python_interpreter: python3
+    upload_rsync_opts: []
+    collect_rsync_opts: []
+
+  # 示例清单只保留这三个服务骨架。
+  children:
+    frp:
+    socat:
+    squid:
+
+frp:
+  # frp_token 必须由秘密变量提供，避免在示例清单中泄露真实令牌。
+  vars:
+    ansible_ssh_user: root
+    frp_token: "{{ vault_frp_token }}"
+    frp_version: '0.40.0'
+
+  hosts:
+    frp-example:
+      ansible_ssh_host: 192.0.2.20
+      # frp 是父分组；示例主机以 frps 服务展示可部署的最小配置。
+      service_name: frps
+      service_path: frps
+      frps_port: 7000
+      handle_services:
+        - frps
+
+socat:
+  vars:
+    ansible_ssh_user: root
+    ansible_python_interpreter: python3
+    service_name: socat
+    service_path: socat
+
+  hosts:
+    socat-example:
+      ansible_ssh_host: 192.0.2.30
+      # 转发规则同样使用文档网段，不包含真实内部地址或域名。
+      rules:
+        - listen: 0.0.0.0:8080
+          to: 198.51.100.10:80
+
+squid:
+  vars:
+    ansible_ssh_user: root
+    ansible_python_interpreter: python3
+    service_name: squid
+    service_path: squid
+
+  hosts:
+    squid-example:
+      ansible_ssh_host: 192.0.2.40
