@@ -52,6 +52,7 @@
           dest: "{{ ansible_user_dir }}/{{ service_path }}/templates/{{ item.path | regex_replace('\\.j2$', '') }}"
           owner: '{{ ansible_user_id }}'
           group: '{{ ansible_user_id }}'
+          mode: "{{ '0600' if item.path in (secret_template_paths | default([])) else omit }}"
           follow: yes
         notify: handle
         when:
@@ -69,6 +70,14 @@
           follow: yes
         when: service_name == "frpc"
         notify: handle
+      - name: validate service configuration
+        command: '{{ service_validation_command }}'
+        args:
+          chdir: '{{ ansible_user_dir }}/{{ service_path }}'
+        changed_when: false
+        when:
+          - service_validation_command is defined
+          - not ansible_check_mode
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ ansible_user_dir }}/{{ service_path }}'
