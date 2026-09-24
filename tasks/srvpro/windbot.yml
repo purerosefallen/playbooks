@@ -15,9 +15,58 @@
     accept_hostkey: true
     track_submodules: true
 - name: build windbot
-  shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.5
+  shell: xbuild /p:Configuration=Release /p:TargetFrameworkVersion=v4.7
   args:
     chdir: '{{home_path}}/windbot'
+- name: check misplaced windbot sqlite libraries
+  stat:
+    path: '{{home_path}}/windbot/bin/Release/ThirdParty/sqlite/{{item}}/sqlite3.dll'
+  register: windbot_misplaced_sqlite_libraries
+  with_items:
+    - x86
+    - x64
+- name: create windbot sqlite runtime directories
+  file:
+    state: directory
+    path: '{{home_path}}/windbot/bin/Release/{{item.item}}'
+  when: item.stat.exists
+  with_items: '{{windbot_misplaced_sqlite_libraries.results}}'
+- name: check existing windbot sqlite runtime libraries
+  stat:
+    path: '{{home_path}}/windbot/bin/Release/{{item}}/sqlite3.dll'
+  register: windbot_existing_sqlite_runtime_libraries
+  with_items:
+    - x86
+    - x64
+- name: link misplaced windbot sqlite libraries
+  file:
+    state: link
+    src: '../ThirdParty/sqlite/{{item.0.item}}/sqlite3.dll'
+    path: '{{home_path}}/windbot/bin/Release/{{item.0.item}}/sqlite3.dll'
+  when: item.0.stat.exists and not item.1.stat.exists
+  with_together:
+    - '{{windbot_misplaced_sqlite_libraries.results}}'
+    - '{{windbot_existing_sqlite_runtime_libraries.results}}'
+- name: check windbot sqlite runtime libraries
+  stat:
+    path: '{{home_path}}/windbot/bin/Release/{{item}}/sqlite3.dll'
+  register: windbot_sqlite_runtime_libraries
+  with_items:
+    - x86
+    - x64
+- name: ignore windbot sqlite runtime directory links
+  lineinfile:
+    path: '{{home_path}}/windbot/.git/info/exclude'
+    line: '/{{item.item}}'
+  when: item.stat.exists
+  with_items: '{{windbot_sqlite_runtime_libraries.results}}'
+- name: link windbot sqlite runtime directories
+  file:
+    state: link
+    src: './bin/Release/{{item.item}}'
+    path: '{{home_path}}/windbot/{{item.item}}'
+  when: item.stat.exists
+  with_items: '{{windbot_sqlite_runtime_libraries.results}}'
 - name: link windbot.exe
   file:
     state: link
