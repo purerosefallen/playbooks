@@ -1,6 +1,9 @@
 ---
   - hosts: '{{ services_target_hosts | default("services") }}'
     remote_user: root
+    module_defaults:
+      docker_compose:
+        prefer_v2: '{{ v2_format | default(false) }}'
     tasks:
       - name: directory
         file:
@@ -78,6 +81,11 @@
         when:
           - service_validation_command is defined
           - not ansible_check_mode
+      - name: Install VPN pool fallback
+        become: true
+        command: ip route replace blackhole {{ network }}
+        changed_when: false
+        when: service_name == "ocserv"
       - name: docker-compose up -d
         docker_compose:
           project_src: '{{ ansible_user_dir }}/{{ service_path }}'

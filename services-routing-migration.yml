@@ -1,6 +1,6 @@
 ---
 # Execute only after all core routers have migrated and been verified.
-- hosts: outer-babeld:ns-slave
+- hosts: outer-railgun-client:ns-slave
   remote_user: root
   tasks:
     - name: Check the existing leaf is running
