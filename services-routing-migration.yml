@@ -1,0 +1,37 @@
+---
+# Execute only after all core routers have migrated and been verified.
+- hosts: outer-babeld:ns-slave
+  remote_user: root
+  tasks:
+    - name: Check the existing leaf is running
+      command: >-
+        docker ps -q
+        --filter label=com.docker.compose.project={{ service_path | basename }}
+        --filter label=com.docker.compose.service=routing-client
+      register: routing_leaf
+      changed_when: false
+      check_mode: false
+    - name: Require the installed routing leaf before retiring Babel
+      assert:
+        that: routing_leaf.stdout | length > 0
+    - name: Find only the old Babel containers
+      command: >-
+        docker ps -aq
+        --filter label=com.docker.compose.project={{ service_path | basename }}
+        --filter label=com.docker.compose.service=babeld
+      register: babel_containers
+      changed_when: false
+      check_mode: false
+    - name: Stop only Babel
+      command:
+        argv: "{{ ['docker', 'stop'] + babel_containers.stdout_lines }}"
+      when: babel_containers.stdout | length > 0
+    - name: Remove only the retired Babel containers
+      command:
+        argv: "{{ ['docker', 'rm'] + babel_containers.stdout_lines }}"
+      when: babel_containers.stdout | length > 0
+    - name: Remove Babel from existing Compose without changing business definitions
+      replace:
+        path: '{{ ansible_user_dir }}/{{ service_path }}/docker-compose.yml'
+        regexp: '(?ms)^  babeld:.*?(?=^  [\w-]+:|\Z)'
+        replace: ''
